@@ -1,4 +1,4 @@
-THERMOplate Help Revision 1.0
+THERMOplate Help Revision 1.1
 
 Definitions:
     addr: Address - THERMOplates have jumpers on the board that allow
@@ -22,7 +22,10 @@ Definitions:
 		readings during power line cycles. In North America, the line frequency
 		is 60Hz (the default value) while in Europe and other parts of the world
 		the frequency is 50Hz.
-		
+	type: the THERMOplate can measure temperature using both K type and J type 
+		thermocouples. Valid arguments are ‘k’ and ‘j’. Be sure and include the 
+		quotation marks.
+	
 Temperature Read Functions
 	getTEMP(addr,channel,scale*) - returns the measured temperature of the
 		specified channel. If the optional scale argument is included, it will
