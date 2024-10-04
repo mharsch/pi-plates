@@ -131,7 +131,15 @@ def ppCMD2(addr,cmd,param1,param2,bytes2return):
             if ((~resp[bytes2return]& 0xFF) != (csum & 0xFF)):
                 DataGood=False
     ppFRAME.set_value(0)
-    time.sleep(.00001)       #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (ppACK.get_value()==1):    #wait up to 50msec for the addressed plate to raise the ACKnowledge pin
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False     
+    #time.sleep(.00001)       #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
     return resp
 
     
@@ -201,7 +209,15 @@ def getID2(addr):
         if ((~checkSum & 0xFF) != (csum & 0xFF)):
             DataGood=False
     ppFRAME.set_value(0)
-    time.sleep(.00001)       #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (ppACK.get_value()==1):    #wait up to 50msec for the addressed plate to raise the ACKnowledge pin
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False     
+    #time.sleep(.00001)       #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
     return id       
 
 def ppCMDADC(addr,cmd,param1,param2,bytes2return,slow=None):
@@ -254,6 +270,14 @@ def ppCMDADC(addr,cmd,param1,param2,bytes2return,slow=None):
             if ((csum & 0xFF) != 0xFF):
                 DataGood=False
     ppFRAME.set_value(0)
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (ppACK.get_value()==1):    #wait up to 50msec for the addressed plate to raise the ACKnowledge pin
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False     
     time.sleep(0.000001)     #allow the uP some time to close SPI engine
     return resp
 
@@ -292,7 +316,15 @@ def ppCMDosc(addr,cmd,param1,param2,bytes2return):
                 resp[i*64:i*64+63]=spi.xfer([0]*(64),2000000) 
                 #print(len(resp))
     ppFRAME.set_value(0)
-    time.sleep(.00001)                  #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (ppACK.get_value()==1):    #wait up to 50msec for the addressed plate to raise the ACKnowledge pin
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False        
+    #time.sleep(.00001)                  #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low
     return resp
     
 def fetchBLOCK(addr,cmd,param1,param2,bytes2return):
@@ -337,5 +369,13 @@ def fetchBLOCK(addr,cmd,param1,param2,bytes2return):
             if (REM != 0):
                 blockBYTES[0:(REM-1)]=spi.xfer3([0x55]*REM,4000000,0)
     ppFRAME.set_value(0)
-    time.sleep(.00001)          #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low    
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (ppACK.get_value()==1):    #wait up to 50msec for the addressed plate to raise the ACKnowledge pin
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False     
+    #time.sleep(.00001)          #added for the RPi5 which is damn fast. DAQC2plate would sometimes miss FRAME going from high to low    
     return list(blockBYTES)
