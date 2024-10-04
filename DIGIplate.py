@@ -1,10 +1,8 @@
 import spidev
 import time
-import string
 import site
 import sys
 import threading
-from numbers import Number
 import RPi.GPIO as GPIO
 from six.moves import input as raw_input
 
@@ -96,7 +94,10 @@ def getDINall(addr):
     resp=ppCMD(addr,0x25,0,0,1)
     return resp[0]
 
-def enableDINint(addr, bit, edge):  # enable DIN interrupt
+#==============================================================================#
+# Event Functions                                                              #
+#==============================================================================#
+def enableDINevent(addr, bit, edge):  # enable DIN interrupt
     VerifyADDR(addr)
     VerifyDINchannel(bit-1)
     bit = bit-1
@@ -107,28 +108,30 @@ def enableDINint(addr, bit, edge):  # enable DIN interrupt
     if ((edge=='b') or (edge=='B')):
         resp=ppCMD(addr,0x23,bit,0,0)
 
-def disableDINint(addr,bit):    # disable DIN interrupt
+def disableDINevent(addr,bit):    # disable DIN interrupt
     VerifyADDR(addr)
     VerifyDINchannel(bit-1)
     resp=ppCMD(addr,0x24,bit-1,0,0)    
 
-#===============================================================================#
-# Interrupt Functions                                                           #
-#===============================================================================#
-def intEnable(addr):    #DIGIplate will pull down on INT pin if an enabled event occurs
+def eventEnable(addr):    #DIGIplate will pull down on INT pin if an enabled event occurs
     VerifyADDR(addr)
     resp=ppCMD(addr,0x04,0,0,0)
 
-def intDisable(addr):   #DIGIplate will not assert interrupts
+def eventDisable(addr):   #DIGIplate will not assert interrupts
     VerifyADDR(addr)
     resp=ppCMD(addr,0x05,0,0,0)
     
-def getINTflags(addr):  #read INT flag register in DIGIplate - this clears interrupt line and the register
+def getEVENTS(addr):  #read INT flag register in DIGIplate - this clears interrupt line and the register
     VerifyADDR(addr)
     resp=ppCMD(addr,0x06,0,0,2)
     value=((resp[0]<<8) + resp[1])
     return value
 
+def check4EVENTS():
+    stat=False
+    if (GPIO.input(ppSRQ)==0):
+        stat=True
+    return stat
 #==============================================================================#    
 # LED Functions                                                                #
 #==============================================================================#   
@@ -150,6 +153,7 @@ def toggleLED(addr):
 def getID(addr):
     global DIGIbaseADDR
     global ppFRAME
+    global DataGood
     VerifyADDR(addr)
     addr=addr+DIGIbaseADDR
     id=""

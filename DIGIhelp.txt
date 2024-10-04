@@ -18,25 +18,25 @@ Input Functions
                      |8|7|6|5|4|3|2|1|
                      —————————————————
     
-Interrupt Functions
-    intEnable(addr) - DIGIplate will pull down on INT pin (GPIO22) if an enabled
+Event Functions
+    eventEnable(addr) - DIGIplate will pull down on INT pin (GPIO22) if an enabled
                       event occurs
     
-    intDisable(addr) - DIGIplate will not assert interrupts on GPIO22
+    eventDisable(addr) - DIGIplate will not assert interrupts on GPIO22
     
-    enableDINint(addr, bit, edge) - enable interrupt for specified bit. The
+    enableDINevent(addr, bit, edge) - enable interrupt for specified bit. The
                         "edge" field requires a single character argument:
                         'F' for falling edge
                         'R' for rising edge 
                         'B' for both rising and falling edges
                         Note that lower case characters are also allowed.
                         
-    disableDINint(addr, bit) - disable interrupts on the specified bit              
+    disableDINevent(addr, bit) - disable interrupts on the specified bit              
     
-    getINTflags(addr) - returns the 16 bit INT flag register in DIGIplate. If 
-                        enabled, the upper 8 bits indicate that a falling edge
-                        has been detected on a specific bit while the lower 8
-                        bits will indicate that a rising edge has occurred.
+    getEVENT(addr) - returns the 16 bit EVENT flag register in DIGIplate. If 
+                     enabled, the upper 8 bits indicate that a falling edge
+                     has been detected on a specific bit while the lower 8
+                     bits will indicate that a rising edge has occurred.
 
 Bit 15  14   13   12   11   10    9    8    7    6    5   4    3    2   1    0
  ———————————————————————————————————————————————————————————————————————————————
@@ -45,7 +45,9 @@ Bit 15  14   13   12   11   10    9    8    7    6    5   4    3    2   1    0
                         Executing this function causes the DIGIplate to deassert
                         the interrupt line (if enabled) and to clear the 16-bit
                         INT flag register.
-
+    check4EVENTS(addr) - reads the status of the event pin and returns True if
+                         an event has occurred or a False if there is
+                         no change.
 LED Control Functions
     setLED(addr) - turn on the LED
     clrLED(addr) - turn off the LED

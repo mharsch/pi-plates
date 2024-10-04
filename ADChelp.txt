@@ -100,7 +100,7 @@ Advanced Mode Functions
         existing configuration. This function does not affect any other
         preconfigured channels.
     getSINGLE(addr,input) - returns the measurement of a single analog input
-        intitiated by the startSINGLE function.
+        initiated by the startSINGLE function.
     readSCAN(addr) - performs a scan and returns a list of all 16 possible
         analog inputs. The value of each enabled channel will appear in the
         list. All disabled channels will have have a value of 'None'.
@@ -108,7 +108,7 @@ Advanced Mode Functions
         combined with event monitoring and the getSCAN function, this is the
         recommended method of performing high precision measurements on multiple
         channels.
-    readSCAN(addr) - returns a list of all 16 possible analog inputs collected
+    getSCAN(addr) - returns a list of all 16 possible analog inputs collected
         by the startSCAN function. The value of each enabled channel will
         appear in the list. All disabled channels will have have a value of
         'None'.
@@ -120,15 +120,17 @@ Advanced Mode Functions
         start block function. The returned data is a sequential list of all the
         enabled channels.
     startSTREAM(addr,num) - places the ADCplate in streaming mode. The ADC
-        continuously samples and generates an event whenever the buffer is full.
-        The 'num' argument sets the buffer size and can range from 1 to 4096
-        values. A smaller buffer will produce "fresher" data but requires more
-        overhead. A large buffer will require less overhead since reads of the
-        ADCplate occur less often. Note that startSTREAM must be used with the
-        getSTREAM function and event monitoring.
+        continuously samples and generates an event whenever the FIFO is half
+        full. The 'num' argument informs the ADC plate the amount of data in the
+        FIFO that triggers an event. This value can range from 1 to 4096 values.
+        A smaller buffer will produce "fresher" data but requires more overhead.
+        A large buffer will require less overhead since reads of the ADCplate
+        occur less often. Note that startSTREAM must be used with the getSTREAM
+        function and event monitoring.
     getSTREAM(addr) - returns an N-sized list of streamed values. The number of
         values is set by the num argument in the startSTREAM function. The
         returned data is a sequential list of all the enabled channels.
+    stopSTREAM(addr) - stops the stream and resets the ADCplate
     
     -----------------------------TRIGGER FUNCTIONS------------------------------
     When trigger mode is used, the ADCplate will automatically perform a single
@@ -193,7 +195,7 @@ Functions Common to All ADC Modes
                         --------------------------
                         
     enableEVENTS(addr,signal - optional) - the ADCplate will pull down the
-        selected SRQ pin if an enabled event occurs. If included, the signal
+        selected GPIO pin if an enabled event occurs. If included, the signal
         argument can be either SHARED (use GPIO22) or DEDICATED (refer to table
         above). If the optional signal argument is omitted, the ADCplate will
         use the last selected pin. At power up or after an initADC, this will
@@ -215,13 +217,19 @@ Functions Common to All ADC Modes
 Digital Input Functions
     getDINbit(addr,bit) - returns the value of the digital input on the 
        specified bit input. Allowable bit values are 0-4. The returned value is 
-        for a high input and 0 for a low input.
+       1 for a high input and 0 for a low input.
                           
     getDINall(addr) - returns all of the digital inputs as an 8-bit number. Bit
         0 is the least significant bit (LSB) and bit 7 is the most significant
         bit:         ————————————————————
                      |NA|NA|NA|4|3|2|1|0|
-                     ———————————————————— 
+                     ————————————————————     
+    enableDINevent(addr, bit) - enables a specific digital input to generate an
+        event on a low to high transition. Allowable bit values are 0-3.
+
+    disableDINevent(addr, bit) - disables the specified digital input from
+        generating events. Allowable bit values are 0-3.
+
 LED Control Functions
     setLED(addr) - turn on the LED
     clrLED(addr) - turn off the LED

@@ -99,7 +99,7 @@ def getIall(addr):
 
 
 #==============================================================================#
-# Unused Precision Functions - analysis showed no clear advantage              #
+# Unused Precision Functions - analysis showed no clear improvement            #
 #==============================================================================#
 def initI(addr,channel):
     VerifyADDR(addr)
