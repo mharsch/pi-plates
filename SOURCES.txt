@@ -27,6 +27,8 @@ piplates/MOTORhelp.txt
 piplates/MOTORplate.py
 piplates/POWERhelp.txt
 piplates/POWERplate.py
+piplates/POWERplate24.py
+piplates/POWERplate24.txt
 piplates/PWM.py
 piplates/RANGE.py
 piplates/RELAY.py

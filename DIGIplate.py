@@ -132,6 +132,51 @@ def check4EVENTS():
     if (GPIO.input(ppSRQ)==0):
         stat=True
     return stat
+    
+#==============================================================================#    
+# FREQ Functions                                                               #
+#==============================================================================#      
+def getFREQ(addr,chan):
+    global DataGood
+    VerifyADDR(addr)
+    assert ((chan>=1) and (chan<=6)),"Frequency input channel value out of range. Must be in the range of 1 to 6"
+    freq=0
+    resp=ppCMD(addr,0xC0,0,chan-1,2) #get the upper 16 bits
+    #print (1, DataGood, (resp[0]<<24)+(resp[1]<<16), resp[2])
+    if(DataGood):
+        counts=(resp[0]<<24)+(resp[1]<<16)
+        resp=ppCMD(addr,0xC0,1,chan-1,2) #get the lower 16 bits
+        #print (2, DataGood, (resp[0]<<8)+resp[1], resp[2])
+        if (DataGood):
+            counts=counts+(resp[0]<<8)+resp[1]
+            if (counts>0):
+                freq=1000000.0/counts
+            else:
+                freq=0
+    return round(freq,3)
+
+def getFREQall(addr):
+    global DataGood
+    VerifyADDR(addr)
+    freqList=6*[0]
+    for i in range(6):
+        chan=i+1
+        freq=0
+        resp=ppCMD(addr,0xC0,0,chan-1,2) #get the upper 16 bits
+        if(DataGood):
+            counts=(resp[0]<<24)+(resp[1]<<16)
+            resp=ppCMD(addr,0xC0,1,chan-1,2) #get the lower 16 bits
+            #print (2, DataGood, (resp[0]<<8)+resp[1], resp[2])
+            if (DataGood):
+                counts=counts+(resp[0]<<8)+resp[1]
+                if (counts>0):
+                    freq=1000000.0/counts
+                else:
+                    freq=0
+                freqList[i]=round(freq,3)
+    return freqList    
+    
+    
 #==============================================================================#    
 # LED Functions                                                                #
 #==============================================================================#   
@@ -146,7 +191,7 @@ def clrLED(addr):
 def toggleLED(addr):
     VerifyADDR(addr)
     resp=ppCMD(addr,0x62,0,0,0)
-    
+  
 #==============================================================================#    
 # SYSTEM Functions                                                             #
 #==============================================================================#     
@@ -235,7 +280,7 @@ def getVersion():
 # LOW Level Functions                                                          #
 #==============================================================================#          
 def VerifyDINchannel(din):
-    assert ((din>=0) and (din<=7)),"Digital input channel value out of range. Must be in the range of 0 to 7"
+    assert ((din>=0) and (din<=7)),"Digital input channel value out of range. Must be in the range of 1 to 8"
     
 def VerifyADDR(addr):
     assert ((addr>=0) and (addr<MAXADDR)),"DIGIplate address out of range"

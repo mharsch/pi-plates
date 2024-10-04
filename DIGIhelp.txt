@@ -17,10 +17,15 @@ Input Functions
                      —————————————————
                      |8|7|6|5|4|3|2|1|
                      —————————————————
+    getFREQ(addr,bit) - returns the measured frequency of the specified bit. 
+                        This function only works on inputs 1-6.
     
+    getFREQall(addr) -  returns the measured frequency of inputs 1-6 as a six
+                        element list.
+                        
 Event Functions
-    eventEnable(addr) - DIGIplate will pull down on INT pin (GPIO22) if an enabled
-                      event occurs
+    eventEnable(addr) - DIGIplate will pull down on INT pin (GPIO22) if an
+                        enabled event occurs
     
     eventDisable(addr) - DIGIplate will not assert interrupts on GPIO22
     
