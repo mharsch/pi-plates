@@ -8,7 +8,7 @@ GPIO.setwarnings(False)
 
 #Initialize
 if (sys.version_info < (2,7,0)):
-    sys.stderr.write("You need at least python 2.7.0 to use this library")
+    sys.stderr.write("You need at least python 2.7.0 to use thid module")
     exit(1)
     
 GPIO.setmode(GPIO.BCM)
@@ -22,10 +22,12 @@ spi = spidev.SpiDev()
 spi.open(0,1)	
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/DAQChelp.txt'
-
-DAQCversion=1.03
-daqcsPresent = range(8)
-Vcc=range(8)
+#helpPath='DAQChelp.txt'
+DAQCversion=1.4
+#Version 1.40 - added Python 3 compatibility
+#Version 1.41 - fixed Python 3 error in getADCall function
+daqcsPresent = list(range(8))
+Vcc=list(range(8))
 MAXADDR=8
 	
 def CLOSE():
@@ -47,10 +49,10 @@ def help():
             while (Count<20):
                 s=f.readline()
                 if (len(s)!=0):
-                    print s[:len(s)-1]
+                    print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False
@@ -75,7 +77,7 @@ def getADC(addr,channel):
     return value
 
 def getADCall(addr):
-    value=range(8)
+    value=list(range(8))
     VerifyADDR(addr)    
     resp=ppCMD(addr,0x31,0,0,16)
     for i in range (0,8):
@@ -331,7 +333,7 @@ def getID(addr):
     VerifyADDR(addr)
     addr=addr+GPIObaseADDR
     id=""
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr;
     arg[1]=0x1;
@@ -366,10 +368,10 @@ def Poll():
     for i in range (0,8):
         rtn = getADDR(i)
         if ((rtn-8)==i):
-            print "DAQCplate found at address",rtn-8
+            print ("DAQCplate found at address",rtn-8)
             ppFoundCount += 1
     if (ppFoundCount == 0):
-        print "No DAQCplates found"
+        print ("No DAQCplates found")
 
 def VerifyDINchannel(din):
     assert ((din>=0) and (din<=7)),"Digital input channel value out of range. Must be in the range of 0 to 7"
@@ -387,7 +389,7 @@ def VerifyADDR(addr):
 	
 def ppCMD(addr,cmd,param1,param2,bytes2return):
     global GPIObaseADDR
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr+GPIObaseADDR;
     arg[1]=cmd;
@@ -395,7 +397,7 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
     arg[3]=param2;
     #    time.sleep(.0005)
     GPIO.output(ppFRAME,True)
-    null=spi.xfer(arg,300000,60)
+    null=spi.xfer(arg,300000,40)
     #null = spi.writebytes(arg)   
     if bytes2return>0:
         time.sleep(.0001)        
@@ -409,6 +411,7 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
 
 def Init():	
     global daqcsPresent
+    global Vcc
     for i in range (0,8):
         daqcsPresent[i]=0
         Vcc[i]=10000

@@ -27,7 +27,7 @@ MPversion=1.3
 # Version 1.3 - adjusted timing on command functions to compensate for RPi SPI changes
 RMAX = 2000
 MAXADDR=8
-motorsPresent = range(8)
+motorsPresent = list(range(8))
 
 def CLOSE():
 	spi.close()
@@ -48,10 +48,10 @@ def help():
             while (Count<20):
                 s=f.readline()
                 if (len(s)!=0):
-                    print s[:len(s)-1]
+                    print(s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False
@@ -60,7 +60,7 @@ def help():
         print ("Can't open help file.")
 
 def Version():
-    print 'MOTORplate Python Module Version '+str(MPversion)
+    print('MOTORplate Python Module Version '+str(MPversion))
 
     
 #==============================================================================#	
@@ -430,10 +430,10 @@ def Poll():
     for i in range (0,8):
         rtn = getADDR(i)
         if (rtn==i):
-            print "MOTORplate found at address",rtn
+            print("MOTORplate found at address",rtn)
             ppFoundCount += 1
     if (ppFoundCount == 0):
-        print "No MOTORplates found"    
+        print("No MOTORplates found")    
 
 def quietPoll():   
     global motorsPresent
@@ -452,7 +452,7 @@ def getID(addr):
     if (addr>255):
         return "ERROR: address out of range - must be less than 255"
     id=""
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr;
     arg[1]=0x1;
@@ -515,7 +515,7 @@ def RESET(addr):
     
 def ppCMDm(addr,cmd,param1,param2,bytes2return):
     global MOTORbaseADDR
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr+MOTORbaseADDR;
     arg[1]=cmd;

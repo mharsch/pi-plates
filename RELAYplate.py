@@ -23,15 +23,15 @@ GPIO.setup(ppINT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 spi = spidev.SpiDev()
 spi.open(0,1)	
 localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/RELAYhelp.txt'
-#helpPath='RELAYhelp.txt'       #for development only
+#helpPath=localPath+'/piplates/RELAYhelp.txt'
+helpPath='RELAYhelp.txt'       #for development only
 RPversion=1.1
 # Version 1.0   -   initial release
 # Version 1.1 - adjusted timing on command functions to compensate for RPi SPI changes
 
 RMAX = 2000
 MAXADDR=8
-relaysPresent = range(8)
+relaysPresent = list(range(8))
 
 #==============================================================================#
 # HELP Functions	                                                           #
@@ -51,10 +51,10 @@ def help():
             while (Count<20):
                 s=f.readline()
                 if (len(s)!=0):
-                    print s[:len(s)-1]
+                    print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False
@@ -117,7 +117,7 @@ def getID(addr):
     VerifyADDR(addr)   
     addr=addr+RELAYbaseADDR
     id=""
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr;
     arg[1]=0x1;
@@ -125,7 +125,8 @@ def getID(addr):
     arg[3]=0;
     ppFRAME = 25
     GPIO.output(ppFRAME,True)
-    null = spi.writebytes(arg)
+    null=spi.xfer(arg,300000,60)
+    #null = spi.writebytes(arg)
     count=0
 #    time.sleep(.01)
     while (count<20): 
@@ -173,7 +174,7 @@ def VerifyADDR(addr):
 
 def ppCMDr(addr,cmd,param1,param2,bytes2return):
     global RELAYbaseADDR
-    arg = range(4)
+    arg = list(range(4))
     resp = []
     arg[0]=addr+RELAYbaseADDR;
     arg[1]=cmd;
@@ -194,6 +195,7 @@ def ppCMDr(addr,cmd,param1,param2,bytes2return):
     
 def getADDR(addr):
     global RELAYbaseADDR
+    resp = []
     resp=ppCMDr(addr,0x00,0,0,1)
     return resp[0]-RELAYbaseADDR
 
