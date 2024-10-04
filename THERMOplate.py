@@ -29,40 +29,22 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/THERMOhelp.txt'
 #helpPath='THERMOhelp.txt'       #for development only
-THERMOversion=1.3
-#1.0 - initial release
-#1.1 - added line frequency options
-#1.2 - added data smoothing options
-#1.3 - fixed coefficients in type K conversion polynomial for T>500C. 
-
+THERMOversion=1.0
 DataGood=False
-#tType='k'   #Default thermocouple is type K
 
 RMAX = 2000
 MAXADDR=8
-kTc=[[0 for z in range(3)] for x in range(10)]    #Type K thermocouple coefficients. Found at: https://www.keysight.com/upload/cmc_upload/All/5306OSKR-MXD-5501-040107_2.htm?&amp&cc=HK&lc=eng
-#kTc[n]=[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9]
-kTc[0]=[0,2.5173462E01,-1.1662878,-1.0833638,-8.9773540E-01,-3.7342377E-01,-8.6632643E-02,-1.0450598E-02,-5.1920577E-04,0]
-kTc[1]=[0,2.508355E01,7.860106E-02,-2.503131E-01,8.315270E-02,-1.228034E-02,9.804036E-04,-4.413030E-05,1.0577340E-06,-1.052755E-08]
-kTc[2]=[-1.318058E02,4.830222E01,-1.646031,5.464731E-02,-9.650715E-04,8.802193E-06,-3.110810E-08,0,0,0]
+Tc=[[0 for z in range(3)] for x in range(10)]    #Type K thermocouple coefficients. Found at: https://www.keysight.com/upload/cmc_upload/All/5306OSKR-MXD-5501-040107_2.htm?&amp&cc=HK&lc=eng
+#Tc[n]=[c0, c1, c2, c3, c4, c5, c6, c7, c8, c9]
+Tc[0]=[0,2.5173462E01,-1.1662878,-1.0833638,-8.9773540E-01,-3.7342377E-01,-8.6632643E-02,-1.0450598E-02,-5.1920577E-04,0]
+Tc[1]=[0,2.508355E01,7.860106E-02,-2.503131E-01,8.315270E-02,-1.228034E-02,9.804036E-04,-4.413030E-05,1.0577340E-06,-1.052755E-08]
+Tc[2]=[-1.318058E-02,4.830222E01,-1.646031,5.464731E02,-9.650715E-04,8.802193E-06,-3.110810E-08,0,0,0]
 # Voltage:	            -5.891 mV to 0 mV   0 mV to 20.644 mV   20.644 to 54.886mV
 # Temperature:	            -200C to 0C	        0C to 500C	       500C to 1372C
 # Coefficient Index:              0                1                    3
 
 #Coefficients to convert temperature to Type K voltage (in millivolts)
-kTcj=[-1.7600413686E-02, 3.8921204975E-02, 1.8558770032E-05, -9.9457592874E-08, 3.1840945719E-10, -5.6072844889E-13, 5.6075059059E-16, -3.2020720003E-19, 9.7151147152E-23, -1.2104721275E-26]
-
-jTc=[[0 for z in range(3)] for x in range(9)]    #Type J thermocouple coefficients. Found at: https://www.keysight.com/upload/cmc_upload/All/5306OSKR-MXD-5501-040106_2.htm
-#jTc[n]=[c0, c1, c2, c3, c4, c5, c6, c7, c8]
-jTc[0]=[0,1.9528268E1,-1.2286185,-1.0752178,-5.9086933E-01,-1.7256713E-01,-2.8131513E-02,-2.3963370E-03,-8.3823321E-05]
-jTc[1]=[0,1.978425E01,-2.001204E-01,1.036969E-02,-2.549687E-04,3.585153E-06,-5.344285E-08,5.099890E-10,0]
-jTc[2]=[-3.1135818702E03,3.00543684E02,-9.94773230,1.70276630E-01,-1.43033468E-03,4.73886084E-06,0,0,0]
-# Voltage:	            -8.095 mV to 0 mV   0 mV to 42.919 mV   42.919 to 54.00mV
-# Temperature:	            -210C to 0C	        0C to 760C	       760C to 934C
-# Coefficient Index:              0                1                    3
-
-#Coefficients to convert temperature to Type J voltage (in millivolts)
-jTcj=[0, 5.0381187815E-02, 3.0475836930E-05, -8.5681065720E-08, 1.3228195295E-10, -1.7052958337E-13, 2.0948090697E-16, -1.2538395336E-19, 1.5631725697E-23]
+Tcj=[-1.7600413686E-02, 3.8921204975E-02, 1.8558770032E-05, -9.9457592874E-08, 3.1840945719E-10, -5.6072844889E-13, 5.6075059059E-16, -3.2020720003E-19, 9.7151147152E-23, -1.2104721275E-26]
 
 
 #Global Declarations
@@ -72,8 +54,6 @@ calOffset=[[0 for z in range(8)] for x in range(8)]  #24 bit floating point offs
 calBias=[0,0,0,0,0,0,0,0]
 calSet=list(range(8))
 tempScale='c'
-
-tType=[['k' for z in range(8)] for x in range(8)] #Default thermocouple is type K
 
 def CLOSE():
 	spi.close()
@@ -133,39 +113,21 @@ def getTEMP(addr,channel,scale=None):
         CJtemp=Tvals[1]*2400.0/65535.0  #convert cold junction reading to voltage
         CJtemp=(10.888-math.sqrt((10.888**2.0)+4*0.00347*(1777.3-CJtemp)))/(2*(-0.00347))+30.0  #convert cold junction voltage to temperature
         Vcj=0
-        if (tType[addr][channel]=='k'):
-            for i in range(10):
-                Vcj+=kTcj[i]*(CJtemp**i)     #Convert cold junction temperature to Type K voltage
-            #print Vcj
-            #Convert thermocouple A2D measurement to voltage and apply calibration values
-            Vmeas=((Tvals[0]*2.4/65535.0)-calOffset[addr][channel])/calScale[addr][channel]*1000   # convert thermocouple A/D value to a voltage (in millivolts)
-            Vhot=Vmeas+Vcj-calBias[addr]*1000.0 #Add cold junction voltage and subtract Vbias from measured voltage
 
-            k=1
-            if (Vhot<0):
-                k=0
-            if (Vhot>20.644):
-                k=2
-            Temp=0
-            for i in range(10):             #convert adjusted measured thermocouple voltage to temperature
-                Temp+=kTc[k][i]*(Vhot**i) 
-        else:
-            for i in range(9):
-                Vcj+=jTcj[i]*(CJtemp**i)     #Convert cold junction temperature to Type J voltage
-            #Convert thermocouple A2D measurement to voltage and apply calibration values
-            Vmeas=((Tvals[0]*2.4/65535.0)-calOffset[addr][channel])/calScale[addr][channel]*1000   # convert thermocouple A/D value to a voltage (in millivolts)
-            Vhot=Vmeas+Vcj-calBias[addr]*1000.0 #Add cold junction voltage and subtract Vbias from measured voltage
-            #print Vhot, Vmeas, Vcj, calBias[addr]
-            k=1
-            if (Vhot<0):
-                k=0
-            if (Vhot>42.919):
-                k=2
-            Temp=0
-            
-            for i in range(9):             #convert adjusted measured thermocouple voltage to temperature
-                Temp+=jTc[k][i]*(Vhot**i)    
-                #print k, jTc[k][i], Temp
+        for i in range(10):
+            Vcj+=Tcj[i]*(CJtemp**i)     #Convert cold junction temperature to Type K voltage
+        #Convert thermocouple A2D measurement to voltage and apply calibration values
+        Vmeas=((Tvals[0]*2.4/65535.0)-calOffset[addr][channel])/calScale[addr][channel]*1000   # convert thermocouple A/D value to a voltage (in millivolts)
+        Vhot=Vmeas+Vcj-calBias[addr]*1000.0 #Add cold junction voltage and subtract Vbias from measured voltage
+
+        k=1
+        if (Vhot<0):
+            k=0
+        if (Vhot>20.644):
+            k=2
+        Temp=0
+        for i in range(10):             #convert adjusted measured thermocouple voltage to temperature
+            Temp+=Tc[k][i]*(Vhot**i) 
         if scal!='c':
             if scal=='f':
                 Temp=Temp*1.8+32.0
@@ -196,20 +158,6 @@ def getCOLD(addr,scale=None):
     CJtemp=round(CJtemp,3)
     return CJtemp
 
-def getRAW(addr,channel):
-    global tType
-    VerifyADDR(addr)
-    assert ((channel>=1) and (channel<=8)),"Channel value out of range. Must be a value between 1 and 8"
-    channel-=1
-    Tvals=[[0],[0]]
-    resp=ppCMD(addr,0x70,channel,0,4) #initiate measurement
-    Tvals[0]=resp[0]*256+resp[1]        #T channel data
-    Tvals[1]=resp[2]*256+resp[3]        #Cold junction value    
-    Vmeas=((Tvals[0]*2.4/65535.0)-calOffset[addr][channel])/calScale[addr][channel]*1000   # convert thermocouple A/D value to a voltage (in millivolts)
-    Vraw=Vmeas-calBias[addr]*1000.0 #subtract Vbias from measured voltage   
-    #print Tvals[0]*2.4/65535.0, Vmeas, calBias[addr]*1000.0
-    return Vraw
-    
 def setSCALE(scale):
     global tempScale
     scal=scale.lower()
@@ -219,32 +167,6 @@ def setSCALE(scale):
 def getSCALE():
     global tempScale
     return tempScale
-    
-def setTYPE(addr,chan,type):
-    VerifyADDR(addr)
-    assert ((chan>=1) and (chan<=8)),"Thermocouple channel value out of range. Must be a value between 1 and 8"
-    type=type.lower()
-    assert ((type=='k') or (type=='j')), "Thermocouple type must be 'k' or 'j'"
-    tType[addr][chan-1]=type 
-    
-def getTYPE(addr,chan):
-    VerifyADDR(addr)
-    assert ((chan>=1) and (chan<=8)),"Thermocouple channel value out of range. Must be a value between 1 and 8"
-    return tType[addr][chan-1]
-    
-    
-def setLINEFREQ(addr,freq):
-    VerifyADDR(addr)
-    assert ((freq==50) or (freq==60)),"Frequency value out of range. Must be a either 50 or 60"
-    resp=ppCMD(addr,0x73,freq,0,0)
-    
-def setSMOOTH(addr):
-    VerifyADDR(addr)
-    resp=ppCMD(addr,0x74,1,0,0)
-    
-def clrSMOOTH(addr):
-    VerifyADDR(addr)
-    resp=ppCMD(addr,0x74,0,0,0)    
 
 #===============================================================================#	
 # Interrupt Functions	                                                   		    #
