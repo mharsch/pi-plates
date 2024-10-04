@@ -29,7 +29,10 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/THERMOhelp.txt'
 #helpPath='THERMOhelp.txt'       #for development only
-THERMOversion=1.1
+THERMOversion=1.2
+#1.0 - initial release
+#1.1 - added line frequency options
+#1.2 - added data smoothing options
 DataGood=False
 
 RMAX = 2000
@@ -172,6 +175,14 @@ def setLINEFREQ(addr,freq):
     VerifyADDR(addr)
     assert ((freq==50) or (freq==60)),"Frequency value out of range. Must be a either 50 or 60"
     resp=ppCMD(addr,0x73,freq,0,0)
+    
+def setSMOOTH(addr):
+    VerifyADDR(addr)
+    resp=ppCMD(addr,0x74,1,0,0)
+    
+def clrSMOOTH(addr):
+    VerifyADDR(addr)
+    resp=ppCMD(addr,0x74,0,0,0)    
 
 #===============================================================================#	
 # Interrupt Functions	                                                   		    #

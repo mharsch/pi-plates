@@ -46,6 +46,12 @@ Temperature Read Functions
 		North America. It should be set to 50 if you are in the UK or Europe. 
 		Note that this function only needs to be called once at the beginning
 		of your program.
+		
+	setSMOOTH(addr) - instructs the THERMOplate to apply a smoothing filter to
+		each thermocouple channel. This feature is on by default.
+		
+	clrSMOOTH(addr) - instructs the THERMOplate to pass the raw data from each
+		thermocouple channel.
 	
 Interrupt Functions	
 	setINTchannel(addr, channel) - directs the THERMOplate to pull the INT line
