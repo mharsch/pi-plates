@@ -30,16 +30,26 @@ if (sys.version_info < (3,0,0)):
     exit(1)
 
 THERMObaseADDR=40
-	
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/THERMOhelp.txt'
+
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/THERMOhelp.txt'
 #helpPath='THERMOhelp.txt'       #for development only
-THERMOversion=2.0
+
+THERMOversion=2.1
 #1.0 - initial release
 #1.1 - added line frequency options
 #1.2 - added data smoothing options
 #1.3 - fixed coefficients in type K conversion polynomial for T>500C. 
 #2.0 - Modified to support RPi5
+#2.1 - Fixed bug where path to help files was broken when modules were
+#      installed using "pip install --break-package-system"
 
 DataGood=False
 #tType='k'   #Default thermocouple is type K

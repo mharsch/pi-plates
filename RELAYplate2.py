@@ -31,9 +31,17 @@ if (sys.version_info < (3,0,0)):
     
 RELAY2baseADDR=0x48	
     
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/RELAY2help.txt'
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/RELAY2help.txt' 
 #helpPath='RELAY2help.txt'       #for development only
+
 RP2version=2.0
 # Version 1.0   -   initial release
 # Version 2.0   -   Modified to support RPi5

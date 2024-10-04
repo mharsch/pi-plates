@@ -29,9 +29,17 @@ if (sys.version_info < (3,0,0)):
     
 GPIObaseADDR=8
 
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/DAQChelp.txt'
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/DAQChelp.txt'
 #helpPath='DAQChelp.txt'
+
 DAQCversion=2.0
 #Version 1.5 - fixed read issues with getaADCall and getID
 #Version 1.4 - added Python 3 compatibility

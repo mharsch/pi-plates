@@ -13,8 +13,10 @@ SW = 24
 drMAP=[5,6,13,19,26,21,20,16]
 dedSRQ=8*[0]
 
-
-chip=gpiod.Chip('gpiochip4')
+try:
+    chip=gpiod.Chip('gpiochip4')
+except:
+    chip=gpiod.Chip('gpiochip0')
 
 ppFRAME=chip.get_line(FRAME)
 ppSRQ=chip.get_line(SRQ)

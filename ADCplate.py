@@ -36,8 +36,15 @@ FSR=25
 #chip=gpiod.Chip('gpiochip4')
 #drMAP=[5,6,13,19,26,21,20,16]
 
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/ADChelp.txt'
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/ADChelp.txt'
 #helpPath='ADChelp.txt'       #for development only
 
 ADCversion=2.0

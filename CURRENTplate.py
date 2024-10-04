@@ -29,8 +29,16 @@ if (sys.version_info < (3,0,0)):
     
 CURRENTbaseADDR=0x50
 
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/CURRENThelp.txt'
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/CURRENThelp.txt'
+
 #helpPath='CURRENThelp.txt'       #for development only
 version=2.0
 # Version 1.0   -   initial release

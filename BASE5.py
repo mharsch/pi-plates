@@ -9,7 +9,10 @@ FRAME = 25
 ACK = 23
 SRQ = 22
 
-chip=gpiod.Chip('gpiochip4')
+try:
+    chip=gpiod.Chip('gpiochip4')
+except:
+    chip=gpiod.Chip('gpiochip0')
        
 ppFRAME=chip.get_line(FRAME)
 ppSRQ=chip.get_line(SRQ)

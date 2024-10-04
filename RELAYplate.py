@@ -29,9 +29,17 @@ if (sys.version_info < (3,0,0)):
 
 RELAYbaseADDR=24
 	
-localPath=site.getsitepackages()[0]
-helpPath=localPath+'/piplates/RELAYhelp.txt'
+if (sys.base_prefix == sys.prefix):
+    result = subprocess.run(['pip', 'show', 'Pi-Plates'], stdout=subprocess.PIPE)
+    result=result.stdout.splitlines()
+    result=str(result[7],'utf-8')
+    k=result.find('/home')
+    result=result[k:]
+else:
+    result=site.getsitepackages()[0]
+helpPath=result+'/piplates/RELAYhelp.txt' 
 #helpPath='RELAYhelp.txt'       #for development only
+
 RPversion=2.0
 # Version 1.0   -   initial release
 # Version 1.1 - adjusted timing on command functions to compensate for RPi SPI changes
