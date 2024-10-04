@@ -29,7 +29,7 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/THERMOhelp.txt'
 #helpPath='THERMOhelp.txt'       #for development only
-THERMOversion=1.0
+THERMOversion=1.1
 DataGood=False
 
 RMAX = 2000
@@ -167,6 +167,11 @@ def setSCALE(scale):
 def getSCALE():
     global tempScale
     return tempScale
+    
+def setLINEFREQ(addr,freq):
+    VerifyADDR(addr)
+    assert ((freq==50) or (freq==60)),"Frequency value out of range. Must be a either 50 or 60"
+    resp=ppCMD(addr,0x73,freq,0,0)
 
 #===============================================================================#	
 # Interrupt Functions	                                                   		    #
