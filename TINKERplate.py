@@ -5,6 +5,11 @@ import site
 import sys
 import math
 from numbers import Number
+import os
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 from BASE import *
 from A2D import *
 from LED import *

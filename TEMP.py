@@ -1,5 +1,10 @@
-from BASE import *
+import os
+import sys
 import time
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+from BASE import *
+
 tempScale='f'
 
 tempt=time.time()
