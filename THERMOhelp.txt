@@ -1,9 +1,9 @@
-THERMOplate Help Revision 1.1
+THERMOplate Help Revision 1.3
 
-Definitions:
-    addr: Address - THERMOplates have jumpers on the board that allow
-        their address to be set to a value between 0 and 7.
-    channel: Each THERMOplate has twelve individually addressable inputs
+Definitions
+    	addr: Address - THERMOplates have jumpers on the board that allow
+        	their address to be set to a value between 0 and 7.
+    	channel: Each THERMOplate has twelve individually addressable inputs
 		numbered 1 through 12. Channels 1 through 8 are Type K thermocouple
 		inputs while channels 9 through 12 accept the DS18B20 digital
 		temperature sensor.
@@ -14,7 +14,7 @@ Definitions:
 		'f', or 'k'. Note that the scale argument is optional for the getTEMP()
 		and getCOLD() functions and will default to the global setting if not
 		included as an argument.
-    value: many functions will return a value. For example, getTEMP() returns a
+    	value: many functions will return a value. For example, getTEMP() returns a
 		the temperature value of the selected channel as a decimal number.
 		Other functions may return a string of characters or a single integer
 		value.
@@ -30,7 +30,11 @@ Temperature Read Functions
 	getTEMP(addr,channel,scale*) - returns the measured temperature of the
 		specified channel. If the optional scale argument is included, it will
 		override the global scale specified by the setSCALE function.
-	
+
+	setTYPE(addr,channel,type) - sets the thermocouple type for a specific channel. Since
+		This only applies to thermocouple inputs, an error message will be generated if the
+		channel argument is not between 1 and 8.
+
 	setSCALE(scale) - sets the temperature scale for all of the THERMOplates 
 		attached to the Raspberry Pi. This is a global value that applies to all
 		temperature measurements unless a different scale setting is passed to
@@ -70,20 +74,19 @@ Interrupt Functions
 		 ______________________________________
 		|NA|NA|NA|NA|NA|NA|DS18B20|Thermocouple|
 		 ¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯
-		 After this registers is read from the THERMOplate, the bits are cleared.
+		 After this register is read from the THERMOplate, all the bits are cleared.
 
 LED Control Functions
-    setLED(addr) - turn on the LED
-    clrLED(addr) - turn off the LED
-    toggleLED(addr) - if LED is on, turn off. If LED is off, turn on.
+    	setLED(addr) - turn on the LED
+    	clrLED(addr) - turn off the LED
+    	toggleLED(addr) - if LED is on, turn off. If LED is off, turn on.
 	getLED(addr) - returns current state of LED - 1 is ON and 0 is OFF.
 	
 System Level Functions:
-    getID(addr) - return Pi-Plate descriptor string
-    getFWrev(addr) - return FW revision
-    getHWrev(addr) - return HW revision
-    getVersion() - returns revision of python module
-    getADDR(addr) - return address of pi-plate. Used for polling available
-        boards at power up.
-    RESET(addr) - set THERMOplate to power on state. Returns temperature scale
-	to Celcius. 
+    	getID(addr) - return Pi-Plate descriptor string
+    	getFWrev(addr) - return FW revision
+    	getHWrev(addr) - return HW revision
+    	getVersion() - returns revision of python module
+    	getADDR(addr) - return address of pi-plate. Used for polling available
+        	boards at power up.
+    	RESET(addr) - set THERMOplate to power on state. 
