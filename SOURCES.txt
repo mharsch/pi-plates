@@ -4,11 +4,12 @@ setup.py
 pi_plates.egg-info/PKG-INFO
 pi_plates.egg-info/SOURCES.txt
 pi_plates.egg-info/dependency_links.txt
+pi_plates.egg-info/desktop.ini
 pi_plates.egg-info/top_level.txt
 piplates/A2D.py
 piplates/ANFUNC.py
-piplates/BASE.py
 piplates/BUTTON.py
+piplates/Base.py
 piplates/DAQC2help.txt
 piplates/DAQC2plate.py
 piplates/DAQChelp.txt
@@ -18,6 +19,8 @@ piplates/LED.py
 piplates/METER.py
 piplates/MOTORhelp.txt
 piplates/MOTORplate.py
+piplates/POWERhelp.txt
+piplates/POWERplate.py
 piplates/PWM.py
 piplates/RANGE.py
 piplates/RELAY.py
