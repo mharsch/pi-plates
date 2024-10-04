@@ -27,8 +27,8 @@ GPIO.setup(ppSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 spi = spidev.SpiDev()
 spi.open(0,1)	
 localPath=site.getsitepackages()[0]
-#helpPath=localPath+'/piplates/POWER24help.txt'
-helpPath='POWER24help.txt'       #for development only
+helpPath=localPath+'/piplates/POWER24help.txt'
+#helpPath='POWER24help.txt'       #for development only
 POWER24version=1.0
 DataGood=False
 cpu = CPUTemperature()

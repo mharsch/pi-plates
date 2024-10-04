@@ -25,10 +25,10 @@ piplates/LED.py
 piplates/METER.py
 piplates/MOTORhelp.txt
 piplates/MOTORplate.py
+piplates/POWER24help.txt
 piplates/POWERhelp.txt
 piplates/POWERplate.py
 piplates/POWERplate24.py
-piplates/POWERplate24.txt
 piplates/PWM.py
 piplates/RANGE.py
 piplates/RELAY.py
