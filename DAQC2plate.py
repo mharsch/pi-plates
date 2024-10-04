@@ -28,7 +28,14 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/DAQC2help.txt'
 #helpPath='DAQC2help.txt'       #for development only
-DAQC2version=1.0
+
+####################################################################################
+#Version    Description
+#  1.0      Initial release
+#  1.1      Improved download of oscilloscope data to address issues with latest OS
+####################################################################################
+DAQC2version=1.1
+
 DataGood=False
 
 RMAX = 2000
@@ -295,7 +302,7 @@ def getOSCtraces(addr):
     global C1state, C2state
     cCount=C1state+C2state
     VerifyADDR(addr)
-    resp=ppCMD(addr,0xA4,0,0,cCount*2048)
+    resp=ppCMDosc(addr,0xA4,0,0,cCount*2048)
     if (cCount==2):
         for i in range(1024):
             trace1[i]=resp[4*i]*256+resp[4*i+1]
@@ -329,36 +336,6 @@ def setOSCtrigger(addr,channel,type,edge,level):
     assert (level>=0 and level <=4095),"Invalid trigger level. Must be between 0 and 4095"     
     resp=ppCMD(addr,0xA6,option+(level>>8),level&0xFF,0)
         
-def setOSCtrigpos(addr,position):    # not used at this time
-#position: 10 bit value in range of 0 to 999
-    VerifyADDR(addr)
-    assert (position>=0 and position <=999),"Invalid position. Must be between 0 and 999" 
-    #Assuming a circular buffer with 64 blocks of data then tell DAQC2 how many blocks to
-    #capture after after the trigger is detected. 
-    bCount=int((1000-position)/1000*32+0.5)
-    resp=ppCMD(addr,0xA8,bCount,0,0)
-    
-def setOSCvertical(sensitivity):
-#set vertical scale of display
-#sensitivity values are:
-# 0:  10mV/div
-# 1:  20mV/div
-# 2:  50mV/div
-# 3:  100mV/div
-# 4:  200mV/div
-# 5:  500mV/div
-# 6:  1V/div
-# 7:  2V/div
-# 8:  5V/div
-    assert ((sensitivity>=0) and (sensitivity<=8)),"Vertical sensitivity value out of range. Must be in the range of 0 to 8"
-
-def zoomOSChorizontal(scale):
-#set horizontal zoom
-    assert ((scale>=1) and (scale<=10)),"Horizontal value out of range. Must be in the range of 1 to 10"
-    
-def setOSCoffset(offset):
-#function to move trace up and down on screen
-    assert ((offset>=-10) and (offset<=10)),"Offset value out of range. Must be in the range of -10 to 10"
 
 def trigOSCnow(addr):
     VerifyADDR(addr)
@@ -648,45 +625,77 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
     arg[1]=cmd;
     arg[2]=param1;
     arg[3]=param2;
-    GPIO.output(ppFRAME,True)
-    null=spi.xfer(arg,500000,5)
+    GPIO.output(ppFRAME,True)       #Set FRAME high - tell Pi-Plates to start listening
+    null=spi.xfer(arg,500000,5)     #Send out 4 byte command - ignore what comes back 
     DataGood=True
     t0=time.time()
     wait=True
     while(wait):
-        if (GPIO.input(ppACK)!=1):
+        if (GPIO.input(ppACK)!=1):  #wait 50msec for the addressed DAQC2 to ACKnowledge command
             wait=False
         if ((time.time()-t0)>0.05):   #timeout
             wait=False
             DataGood=False    
-    if (bytes2return>0) and DataGood:
+    if (bytes2return>0) and DataGood:   #If DAQC2 is supposed to send data AND no timeout occurred
         t0=time.time()
         wait=True
         while(wait):
-            if (GPIO.input(ppACK)!=1):              
+            if (GPIO.input(ppACK)!=1):  #Ensure that ACK is still low before collecting data             
                 wait=False
-            if ((time.time()-t0)>0.08):   #timeout
+            if ((time.time()-t0)>0.08): #timeout
                 wait=False
                 DataGood=False
-        if (DataGood==True):
+        if (DataGood==True):            #if ACK is still low AND there was no timeout then fetch data
             #time.sleep(.0001)
-            for i in range(0,bytes2return+1):	
-                dummy=spi.xfer([00],500000,5)
-                resp.append(dummy[0])
-            csum=0;
-            for i in range(0,bytes2return):
+            for i in range(0,bytes2return+1):	#Fetch each byte. That [00] is simply a single element list set to zero
+                dummy=spi.xfer([00],500000,5)   #That [00] is simply a single element list set to zero
+                resp.append(dummy[0])           
+            csum=0;                             
+            for i in range(0,bytes2return):     #calculate and verify checksum
                 csum+=resp[i]
             if ((~resp[bytes2return]& 0xFF) != (csum & 0xFF)):
                 DataGood=False
-    #time.sleep(.001)
     GPIO.output(ppFRAME,False)
-    #time.sleep(.001)
+    return resp
+    
+def ppCMDosc(addr,cmd,param1,param2,bytes2return):
+    global DAQC2baseADDR
+    global DataGood
+    DataGood=True
+    arg = list(range(4))
+    resp = [0]*(bytes2return)
+    arg[0]=addr+DAQC2baseADDR;
+    arg[1]=cmd;
+    arg[2]=param1;
+    arg[3]=param2;
+    GPIO.output(ppFRAME,True)       #Set FRAME high - tell Pi-Plates to start listening
+    null=spi.xfer(arg,500000,5)     #Send out 4 byte command - ignore what comes back 
+    DataGood=True
+    t0=time.time()
+    wait=True
+    while(wait):
+        if (GPIO.input(ppACK)!=1):  #wait 50msec for the addressed DAQC2 to ACKnowledge command
+            wait=False
+        if ((time.time()-t0)>0.05):   #timeout
+            wait=False
+            DataGood=False    
+    if (bytes2return>0) and DataGood:   #If DAQC2 is supposed to send data AND no timeout occurred
+        t0=time.time()
+        wait=True
+        while(wait):
+            if (GPIO.input(ppACK)!=1):  #Ensure that ACK is still low before collecting data             
+                wait=False
+            if ((time.time()-t0)>0.08): #timeout
+                wait=False
+                DataGood=False
+        if (DataGood==True):            #if ACK is still low AND there was no timeout then fetch data
+            resp=spi.xfer([0]*(bytes2return),2000000,0) 
+    GPIO.output(ppFRAME,False)
     return resp
     
 def getADDR(addr):
     global DAQC2baseADDR
     resp=ppCMD(addr,0x00,0,0,1)
-    #print resp, DataGood;
     if (DataGood):
         return resp[0]-DAQC2baseADDR
     else:

@@ -20,7 +20,7 @@ RELAY Control Functions
         at once use the number 127 for the value.
     relaySTATE(addr) - Returns a 7-bit number with the current state of each
         relay. Bit 0 is relay 1, bit 1 is relay 2, and so on. A "1" in a bit 
-        position means that the relay is on and zero means that i's off.
+        position means that the relay is on and zero means that it's off.
     
 LED Control Functions
     setLED(addr) - turn on the LED
