@@ -33,9 +33,10 @@ DIGIbaseADDR=0x58
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/DIGIhelp.txt'
 #helpPath='DIGIhelp.txt'       #for development only
-DIGIversion=2.0
+DIGIversion=2.1
 # Version 1.0   -   initial release
 # Version 2.0   -   Modified to support RPi5
+# Version 2.1   -   Fixed bug in getFREQ
 
 RMAX = 2000
 MAXADDR=8
@@ -140,11 +141,11 @@ def getFREQ(addr,chan):
     freq=0
     resp=ppCMD(addr,0xC0,0,chan-1,2) #get the upper 16 bits
     #print (1, DataGood, (resp[0]<<24)+(resp[1]<<16), resp[2])
-    if(DataGood):
+    if(CMD.DataGood):
         counts=(resp[0]<<24)+(resp[1]<<16)
         resp=ppCMD(addr,0xC0,1,chan-1,2) #get the lower 16 bits
         #print (2, DataGood, (resp[0]<<8)+resp[1], resp[2])
-        if (DataGood):
+        if (CMD.DataGood):
             counts=counts+(resp[0]<<8)+resp[1]
             if (counts>0):
                 freq=1000000.0/counts
@@ -160,11 +161,11 @@ def getFREQall(addr):
         chan=i+1
         freq=0
         resp=ppCMD(addr,0xC0,0,chan-1,2) #get the upper 16 bits
-        if(DataGood):
+        if(CMD.DataGood):
             counts=(resp[0]<<24)+(resp[1]<<16)
             resp=ppCMD(addr,0xC0,1,chan-1,2) #get the lower 16 bits
             #print (2, DataGood, (resp[0]<<8)+resp[1], resp[2])
-            if (DataGood):
+            if (CMD.DataGood):
                 counts=counts+(resp[0]<<8)+resp[1]
                 if (counts>0):
                     freq=1000000.0/counts

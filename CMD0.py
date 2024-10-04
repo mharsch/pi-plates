@@ -258,7 +258,7 @@ def ppCMDosc(addr,cmd,param1,param2,bytes2return):
     arg = list(range(4))
     resp = [0]*(bytes2return)
     N=bytes2return>>6
-    print(bytes2return,N)
+    #print(bytes2return,N)
     arg[0]=addr;
     arg[1]=cmd;
     arg[2]=param1;

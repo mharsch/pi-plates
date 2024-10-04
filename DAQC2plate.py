@@ -38,8 +38,9 @@ helpPath=localPath+'/piplates/DAQC2help.txt'
 #  1.0      Initial release
 #  1.1      Improved download of oscilloscope data to address issues with latest OS
 #  2.0 - Moved I/O operations into separate module for RPi5
+#  2.1 - Fixed bug in getFREQ
 ####################################################################################
-DAQC2version=2.0
+DAQC2version=2.1
 
 DataGood=False
 
@@ -467,10 +468,10 @@ def getFREQ(addr):
     VerifyADDR(addr)
     freq=0
     resp=ppCMD(addr,0xC0,0,0,2) #get the upper 16 bits
-    if(DataGood):
+    if(CMD.DataGood):
         counts=(resp[0]<<24)+(resp[1]<<16)
         resp=ppCMD(addr,0xC0,1,0,2) #get the lower 16 bits
-        if (DataGood):
+        if (CMD.DataGood):
             counts=counts+(resp[0]<<8)+resp[1]
             if (counts>0):
                 freq=6000000.0/counts
