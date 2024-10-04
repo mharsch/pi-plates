@@ -13,4 +13,6 @@ piplates/MOTORhelp.txt
 piplates/MOTORplate.py
 piplates/RELAYhelp.txt
 piplates/RELAYplate.py
+piplates/THERMOhelp.txt
+piplates/THERMOplate.py
 piplates/__init__.py

@@ -8,7 +8,7 @@ GPIO.setwarnings(False)
 
 #Initialize
 if (sys.version_info < (2,7,0)):
-    sys.stderr.write("You need at least python 2.7.0 to use thid module")
+    sys.stderr.write("You need at least python 2.7.0 to use this module")
     exit(1)
     
 GPIO.setmode(GPIO.BCM)
@@ -23,9 +23,9 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/DAQChelp.txt'
 #helpPath='DAQChelp.txt'
-DAQCversion=1.4
-#Version 1.40 - added Python 3 compatibility
-#Version 1.41 - fixed Python 3 error in getADCall function
+DAQCversion=1.5
+#Version 1.5 - fixed read issues with getaADCall and getID
+#Version 1.4 - added Python 3 compatibility
 daqcsPresent = list(range(8))
 Vcc=list(range(8))
 MAXADDR=8
@@ -77,12 +77,15 @@ def getADC(addr,channel):
     return value
 
 def getADCall(addr):
-    value=list(range(8))
+    value=range(8)
     VerifyADDR(addr)    
-    resp=ppCMD(addr,0x31,0,0,16)
+    #resp=ppCMD(addr,0x31,0,0,16)
     for i in range (0,8):
-        value[i]=(256*resp[2*i]+resp[2*i+1])
-        value[i]=round(value[i]*4.096/1024,3)
+        resp=ppCMD(addr,0x30,i,0,2)
+        value[i]=(256*resp[0]+resp[1])
+        value[i]=round(value[i]*4.096/1024,3)        
+        # value[i]=(256*resp[2*i]+resp[2*i+1])
+        # value[i]=round(value[i]*4.096/1024,3)
     return value    
     
 #===============================================================================#	
@@ -339,15 +342,15 @@ def getID(addr):
     arg[1]=0x1;
     arg[2]=0;
     arg[3]=0;
-
     ppFRAME = 25
     GPIO.output(ppFRAME,True)
-    null = spi.writebytes(arg)
+    #null = spi.writebytes(arg)
+    null=spi.xfer(arg,300000,60)
     count=0
-    time.sleep(.0001)
+#    time.sleep(.0001)
     while (count<20): 
-        dummy=spi.xfer([00],500000,40)
-        time.sleep(.0001)
+        dummy=spi.xfer([00],300000,20)
+#        time.sleep(.0001)
         if (dummy[0] != 0):
             num = dummy[0]
             id = id + chr(num)
