@@ -4,7 +4,7 @@ with contextlib.redirect_stdout(None):
 pygame.init()
 
 MAXWIDTH=1000
-MAXHEIGHT=80
+MAXHEIGHT=100
 MAXLINES=12
 FONTSIZE=128
 COLOR = (0,128,0)

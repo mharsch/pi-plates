@@ -1,4 +1,5 @@
 MANIFEST.in
+README.txt
 setup.py
 pi_plates.egg-info/PKG-INFO
 pi_plates.egg-info/SOURCES.txt
@@ -8,7 +9,6 @@ piplates/A2D.py
 piplates/ANFUNC.py
 piplates/BASE.py
 piplates/BUTTON.py
-piplates/Base.py
 piplates/DAQC2help.txt
 piplates/DAQC2plate.py
 piplates/DAQChelp.txt
