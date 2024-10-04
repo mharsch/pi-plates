@@ -1,4 +1,4 @@
-inimport spidev
+import spidev
 import time
 import string
 import site
