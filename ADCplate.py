@@ -1,45 +1,46 @@
-import spidev
 import time
 import site
 import sys
+#import CMD
+#import gpiod
+import subprocess
 import threading
-import RPi.GPIO as GPIO
-GPIO.setwarnings(False)
+
+command = ["cat", "/proc/cpuinfo"]
+output = subprocess.check_output(command)
+for line in output.decode().splitlines():
+    if "Model" in line:
+        model = line.split(":")[1].strip()
+        break    
+#print(model)
+if model.find("Raspberry Pi 5") != -1:
+    import CMD5 as CMD 
+else:
+    import CMD0 as CMD
 
 #Initialize
 if (sys.version_info < (3,0,0)):
-    sys.stderr.write("You need python 3 to use this library")
+    sys.stderr.write("This library is only compatible with Python 3")
     exit(1)
+
+ADCbaseADDR=64
 
 Vref=2.5
 FSR=25
 
-GPIO.setmode(GPIO.BCM)
-ADCbaseADDR=64
-ppFRAME = 25
-ppINT = 22
-ppACK = 23
-ppSW = 24
-drMAP=[5,6,13,19,26,21,20,16]
-GPIO.setup(ppFRAME,GPIO.OUT)
-GPIO.output(ppFRAME,False)  #Initialize FRAME signal
-time.sleep(.001)            #let Pi-Plate reset SPI engine if necessary
-GPIO.setup(ppINT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppACK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-try:
-    spi = spidev.SpiDev()
-    spi.open(0,1)
-except:
-    print("Did you enable the SPI hardware interface on your Raspberry Pi?")
-    print("Go to https://pi-plates.com/getting_started/ and learn how.")
+#chip=gpiod.Chip('gpiochip4')
+#drMAP=[5,6,13,19,26,21,20,16]
 
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/ADChelp.txt'
 #helpPath='ADChelp.txt'       #for development only
-ADCversion=1.0
-DataGood=False
+
+ADCversion=2.0
+#   Revision 1 - initial release
+#   Revision 2 - updated to support RPi5
+
+
+#DataGood=False
 lock = threading.Lock()
 lock.acquire()
 
@@ -69,10 +70,11 @@ srLIST=[5 for z in range(8)]
 modeLIST=[1 for z in range(8)]
 scanLIST=[0 for z in range(8)]
 srqSOURCE=[SHARED for z in range(8)]
+srqLINE=[SHARED for z in range(8)]
 
 def CLOSE():
     spi.close()
-    GPIO.cleanup()
+
 
 def Help():
     help()
@@ -753,6 +755,8 @@ def disableDINevent(addr,bit):    # disable DIN interrupt
 #===============================================================================#
 def enableEVENTS(addr,signal=None): #ADC will pull down on selected SRQ pin if an enabled event occurs
     global srqSOURCE
+    global srqLINE
+    global drMAP
     if (VerifyADDR(addr) == 0):
         return
     if (signal==None):
@@ -762,7 +766,10 @@ def enableEVENTS(addr,signal=None): #ADC will pull down on selected SRQ pin if a
             print("Command ignore - signal value must be SHARED or DEDICATED")
             return
         if (signal==DEDICATED):
-            GPIO.setup(drMAP[addr], GPIO.IN, pull_up_down=GPIO.PUD_UP)            
+            #srqLINE[addr]=chip.get_line(drMAP[addr])
+            #srqLINE[addr].request(consumer="SRQ"+str(addr), type=gpiod.LINE_REQ_DIR_IN, flags=gpiod.LINE_REQ_FLAG_BIAS_PULL_UP)
+            #GPIO.setup(drMAP[addr], GPIO.IN, pull_up_down=GPIO.PUD_UP) 
+            CMD.enDedicated(addr)
         srqSOURCE[addr]=signal
     ppCMD(addr,0x04,signal,0,0)
 
@@ -770,6 +777,7 @@ def disableEVENTS(addr):   #ADC will not assert interrupts on INT pin (GPIO22) i
     if (VerifyADDR(addr) == 0):
         return
     ppCMD(addr,0x05,0,0,0)
+    CMD.disDedicated(addr)
 
 def getEVENTS(addr):   #read INT flag register - this resets interrupt line and clears the register
     if (VerifyADDR(addr) == 0):
@@ -779,25 +787,18 @@ def getEVENTS(addr):   #read INT flag register - this resets interrupt line and 
     return value
 
 # The ADCplate does not support the masking of interrupts - this must be done in SW.
-# def configEVENTS(addr,pattern):    #set the pattern for the interrupt mask
-    # if (VerifyADDR(addr) == 0):
-        # return
-    # if ((pattern<0) or (pattern>31)):
-        # print("Command ignored - pattern value must be between 0 and 31")
-        # return
-    # ppCMD(addr,0x07,pattern,0,1)
 
 def check4EVENTS(addr):
+    global ADCbaseADDR
     global drMAP
+    global srqLINE
     if (VerifyADDR(addr) == 0):
         return
     stat=False
     if (srqSOURCE[addr]==DEDICATED):
-        if (GPIO.input(drMAP[addr])==0):
-            stat=True
+        stat=CMD.getDedicated(addr)
     else:
-        if (GPIO.input(ppINT)==0):
-            stat=True
+        stat = CMD.getSRQ()
     return stat
 
 #==============================================================================#
@@ -977,64 +978,10 @@ def clrINT(addr):
 #==============================================================================#
 def getID(addr):
     global ADCbaseADDR
-    global ppFRAME
-    global DataGood
-    if (VerifyADDR(addr) == 0):
-        return ''
-    addr=addr+ADCbaseADDR
-    id=""
-    arg = list(range(4))
-    #resp = []
-    arg[0]=addr;
-    arg[1]=0x1;
-    arg[2]=0;
-    arg[3]=0;
-    DataGood=True
-    wait=True
-    t0=time.time()
-    while(wait):
-        if (GPIO.input(ppACK)==1):
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False
-    if (DataGood==True):
-        GPIO.output(ppFRAME,True)
-        time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-        spi.xfer(arg,500000,5)
-        #DataGood=True
-        t0=time.time()
-        wait=True
-        while(wait):
-            if (GPIO.input(ppACK)!=1):
-                wait=False
-            if ((time.time()-t0)>0.05):   #timeout
-                wait=False
-                DataGood=False
-        if (DataGood==True):
-            time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-            count=0
-            csum=0
-            go=True
-            while (go):
-                dummy=spi.xfer([00],500000,5)
-                if (dummy[0] != 0):
-                    num = dummy[0]
-                    csum += num
-                    id = id + chr(num)
-                    count += 1
-                else:
-                    dummy=spi.xfer([00],500000,1)
-                    checkSum=dummy[0]
-                    go=False
-                if (count>25):
-                    go=False
-                    DataGood=False
-            if ((~checkSum & 0xFF) != (csum & 0xFF)):
-                DataGood=False
-        GPIO.output(ppFRAME,False)
-        time.sleep(0.000001)     #allow the uP some time to close SPI engine
-    return id
+    if (VerifyADDR(addr)):
+        addr=addr+ADCbaseADDR
+        return CMD.getID2(addr)
+
 
 def VerifyADDR(addr):
     global MAXADDR, adcsPresent
@@ -1049,96 +996,19 @@ def VerifyADDR(addr):
 
 def ppCMD(addr,cmd,param1,param2,bytes2return,slow=None):
     global ADCbaseADDR
-    global DataGood
-    if (slow==None):
-        tOut=0.05
-    else:
-        tOut=3.0
-    arg = list(range(4))
-    resp = [0]*(bytes2return+1)
-    arg[0]=addr+ADCbaseADDR;
-    arg[1]=cmd;
-    arg[2]=param1;
-    arg[3]=param2;
-    DataGood=True
-    wait=True
-    t0=time.time()
-    while(wait):
-        if (GPIO.input(ppACK)!=0):
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False
-    GPIO.output(ppFRAME,True)
-    time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-    spi.xfer(arg,400000,0)
-    t0=time.time()
-    wait=True
-    while(wait):
-        if (GPIO.input(ppACK)!=1):
-            wait=False
-        if ((time.time()-t0)>tOut):   #timeout
-            wait=False
-            DataGood=False
-    if (bytes2return>0) and DataGood:
-        time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-        t0=time.time()
-        wait=True
-        while(wait):
-            if (GPIO.input(ppACK)!=1):
-                wait=False
-            if ((time.time()-t0)>0.1):   #timeout
-                wait=False
-                DataGood=False
-        if (DataGood==True):
-            resp=spi.xfer([0]*(bytes2return+1),4000000,0)   #don't exceed 4Mhz
-            csum=0;
-            for i in range(0,bytes2return+1):
-                csum+=resp[i]
-            if ((csum & 0xFF) != 0xFF):
-                DataGood=False
-    GPIO.output(ppFRAME,False)
-    time.sleep(0.000001)     #allow the uP some time to close SPI engine
-    return resp
+    return CMD.ppCMDADC(addr+ADCbaseADDR,cmd,param1,param2,bytes2return,slow)
 
 def fetchBLOCK(addr,cmd,param1,param2,bytes2return):
     global ADCbaseADDR
-    global DataGood
     global blockBYTES
-    arg = list(range(4))
-    arg[0]=addr+ADCbaseADDR
-    arg[1]=cmd;
-    arg[2]=param1;
-    arg[3]=param2;
-    DataGood=True
-    wait=True
-    t0=time.time()
-    while(wait):
-        if (GPIO.input(ppACK)!=0):  #Ensure that ACK is high before proceeding
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False
-    GPIO.output(ppFRAME,True)       #Set the FRAME signal high
-    time.sleep(0.000001)            #allow the uP some time to initialize the SPI
-    spi.xfer(arg,500000,0)     #Send the fetch command
-    t0=time.time()
-    wait=True
-    while(wait):
-        if (GPIO.input(ppACK)==0):  #wait until the command is received and ACKnowledged
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False
-    if DataGood:
-        time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-        blockBYTES=spi.xfer3([0x55]*bytes2return,8000000,0)
-    GPIO.output(ppFRAME,False)
+    blockBYTES=CMD.fetchBLOCK(addr+ADCbaseADDR,cmd,param1,param2,bytes2return)
+
 
 def getADDR(i):
     global ADCbaseADDR, DataGood
     resp=ppCMD(i,0x00,0,0,1)
-    if (DataGood):
+    #print(CMD.DataGood,resp)
+    if (CMD.DataGood):
         return resp[0]-ADCbaseADDR
     else:
         return 8
@@ -1153,7 +1023,6 @@ def quietPoll():
             adcsPresent[i]=1
             ppFoundCount += 1
             initADC(i)
-            #disableEVENTS(i)
 
 def RESET(addr):
     VerifyADDR(addr)

@@ -3,33 +3,35 @@ import time
 import string
 import site
 import sys
+import subprocess
 from gpiozero import CPUTemperature
-import RPi.GPIO as GPIO
-GPIO.setwarnings(False)
+
+command = ["cat", "/proc/cpuinfo"]
+output = subprocess.check_output(command)
+for line in output.decode().splitlines():
+    if "Model" in line:
+        model = line.split(":")[1].strip()
+        break    
+#print(model)
+if model.find("Raspberry Pi 5") != -1:
+    import CMD5 as CMD 
+else:
+    import CMD0 as CMD
 
 #Initialize
 if (sys.version_info < (3,0,0)):
     sys.stderr.write("This library only works for Python3")
     exit(1)
     
-GPIO.setmode(GPIO.BCM)
 POWERbaseADDR=0
-ppFRAME = 25
-ppINT = 22
-ppACK = 23
-ppSW = 24
-GPIO.setup(ppFRAME,GPIO.OUT)
-GPIO.output(ppFRAME,False)  #Initialize FRAME signal
-time.sleep(.001)            #let Pi-Plate reset SPI engine if necessary
-GPIO.setup(ppINT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppACK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-spi = spidev.SpiDev()
-spi.open(0,1)	
+
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/POWERhelp.txt'
 #helpPath='POWERhelp.txt'       #for development only
-POWERversion=1.1
+POWERversion=2.0
+# Version 1.0   -   initial release
+# Version 1.1   -   added optional argument to Button Setup
+# Version 2.0   -   Modified to support RPi5
 DataGood=False
 cpu = CPUTemperature()
 
@@ -40,10 +42,6 @@ RMAX = 2000
 MAXADDR=8
 
 powerPresent = 0
-
-def CLOSE():
-	spi.close()
-	GPIO.cleanup()
 
 def Help():
 	help()
@@ -131,7 +129,7 @@ def setLED(addr,led):
     resp=ppCMD(0,0x61,1,0,0)
     if (led=='RED' or led=='RD'):
         resp=ppCMD(0,0x60,1,0,0)
-    if (led=='GREEN' or led=='GR'):
+    if (led=='GREEN' or led=='GRN'):
         resp=ppCMD(0,0x60,0,0,0)
     if (led=='YELLOW' or led=='YEL'):
         resp=ppCMD(0,0x60,0,0,0) 
@@ -192,95 +190,13 @@ def VerifyADDR(addr):
     addr_str=str(addr)
     assert (powerPresent==1),"No POWERplate found"
     
+
 def ppCMD(addr,cmd,param1,param2,bytes2return):
-    global POWERbaseADDR
-    global DataGood
-    DataGood=True
-    arg = list(range(4))
-    resp = []
-    arg[0]=0;
-    arg[1]=cmd;
-    arg[2]=param1;
-    arg[3]=param2;
-    GPIO.output(ppFRAME,True)
-    null=spi.xfer(arg,1000000,1)
-    DataGood=True
-    t0=time.time()
-    wait=True
-    while(wait):
-        if (GPIO.input(ppACK)!=1):
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False    
-    if (bytes2return>0) and DataGood:
-        t0=time.time()
-        wait=True
-        while(wait):
-            if (GPIO.input(ppACK)!=1):              
-                wait=False
-            if ((time.time()-t0)>0.08):   #timeout
-                wait=False
-                DataGood=False
-        if (DataGood==True):
-            #time.sleep(.0001)
-            for i in range(0,bytes2return+1):	
-                dummy=spi.xfer([00],1000000,5)
-                resp.append(dummy[0])
-            csum=0;
-            for i in range(0,bytes2return):
-                csum+=resp[i]
-            if ((~resp[bytes2return]& 0xFF) != (csum & 0xFF)):
-                DataGood=False
-    #time.sleep(.001)
-    GPIO.output(ppFRAME,False)
-    #time.sleep(.001)
-    return resp
+    return CMD.ppCMD2(addr,cmd,param1,param2,bytes2return)
  
-def getID(addr=None):
-    id=""
-    arg = list(range(4))
-    resp = []
-    arg[0]=0;
-    arg[1]=0x1;
-    arg[2]=0;
-    arg[3]=0;
-    ppFRAME = 25
-    GPIO.output(ppFRAME,True)
-    null=spi.xfer(arg,500000,50)
-    DataGood=True
-    t0=time.time()
-    wait=True
-    while(wait):
-        if (GPIO.input(ppACK)!=1):              
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False
-    if (DataGood==True):
-        count=0 
-        csum=0
-        go=True
-        while (go): 
-            dummy=spi.xfer([00],500000,40)
-            if (dummy[0] != 0):
-                num = dummy[0]
-                csum += num
-                id = id + chr(num)
-                #print count, num
-                count += 1
-            else:
-                dummy=spi.xfer([00],500000,40)  
-                checkSum=dummy[0]                
-                go=False 
-            if (count>25):
-                go=False
-                DataGood=False
-        #print checkSum, ~checkSum & 0xFF, csum & 0xFF
-        if ((~checkSum & 0xFF) != (csum & 0xFF)):
-            DataGood=False
-    GPIO.output(ppFRAME,False)
-    return id
+def getID(addr):
+    addr=0
+    return CMD.getID2(addr)
     
 def readFLASH(addr,flashadddr):
     global POWERbaseADDR

@@ -17,7 +17,7 @@ Input Functions
                      —————————————————
                      |8|7|6|5|4|3|2|1|
                      —————————————————
-    getFREQ(addr,bit) - returns the measured frequency of the specified bit. 
+    getFREQ(addr,bit) - returns the measured frequency of the specified input. 
                         This function only works on inputs 1-6.
     
     getFREQall(addr) -  returns the measured frequency of inputs 1-6 as a six

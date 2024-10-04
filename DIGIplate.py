@@ -3,40 +3,34 @@ import time
 import site
 import sys
 import threading
-import RPi.GPIO as GPIO
 from six.moves import input as raw_input
+import subprocess
+command = ["cat", "/proc/cpuinfo"]
+output = subprocess.check_output(command)
+for line in output.decode().splitlines():
+    if "Model" in line:
+        model = line.split(":")[1].strip()
+        break    
+#print(model)
+if model.find("Raspberry Pi 5") != -1:
+    import CMD5 as CMD 
+else:
+    import CMD0 as CMD
 
-GPIO.setwarnings(False)
 
 #Initialize
 if (sys.version_info < (3,0,0)):
     sys.stderr.write("This library requires Python3")
     exit(1)
     
-GPIO.setmode(GPIO.BCM)
 DIGIbaseADDR=0x58
-ppFRAME = 25
-ppACK = 23
-ppSRQ=22
-
-GPIO.setup(ppFRAME,GPIO.OUT)
-GPIO.output(ppFRAME,False)  #Initialize FRAME signal
-time.sleep(.001)            #let Pi-Plate reset SPI engine if necessary
-GPIO.setup(ppACK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppSRQ, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
-try:
-    spi = spidev.SpiDev()
-    spi.open(0,1)
-except:
-    print("Did you enable the SPI hardware interface on your Raspberry Pi?")
-    print("Go to https://pi-plates.com/getting_started/ and learn how.")    
     
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/DIGIhelp.txt'
 #helpPath='DIGIhelp.txt'       #for development only
-DIGIversion=1.0
+DIGIversion=2.0
 # Version 1.0   -   initial release
+# Version 2.0   -   Modified to support RPi5
 
 RMAX = 2000
 MAXADDR=8
@@ -128,9 +122,7 @@ def getEVENTS(addr):  #read INT flag register in DIGIplate - this clears interru
     return value
 
 def check4EVENTS():
-    stat=False
-    if (GPIO.input(ppSRQ)==0):
-        stat=True
+    stat=CMD.getSRQ()
     return stat
     
 #==============================================================================#    
@@ -197,63 +189,9 @@ def toggleLED(addr):
 #==============================================================================#     
 def getID(addr):
     global DIGIbaseADDR
-    global ppFRAME
-    global DataGood
-    VerifyADDR(addr)
     addr=addr+DIGIbaseADDR
-    id=""
-    arg = list(range(4))
-    resp = []
-    arg[0]=addr;
-    arg[1]=0x1;
-    arg[2]=0;
-    arg[3]=0;
-    DataGood=True
-    wait=True
-    t0=time.time()
-    while(wait):
-        if (GPIO.input(ppACK)==1):
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False     
-    if (DataGood==True):
-        GPIO.output(ppFRAME,True)
-        time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-        null=spi.xfer(arg,500000,5)
-        #DataGood=True
-        t0=time.time()
-        wait=True
-        while(wait):
-            if (GPIO.input(ppACK)!=1):
-                wait=False
-            if ((time.time()-t0)>0.05):   #timeout
-                wait=False
-                DataGood=False
-        if (DataGood==True):
-            time.sleep(0.000001)     #allow the uP some time to initialize the SPI
-            count=0 
-            csum=0
-            go=True
-            while (go): 
-                dummy=spi.xfer([00],500000,5)
-                if (dummy[0] != 0):
-                    num = dummy[0]
-                    csum += num
-                    id = id + chr(num)
-                    count += 1
-                else:
-                    dummy=spi.xfer([00],500000,1)
-                    checkSum=dummy[0]
-                    go=False 
-                if (count>25):
-                    go=False
-                    DataGood=False
-            if ((~checkSum & 0xFF) != (csum & 0xFF)):
-                DataGood=False
-        GPIO.output(ppFRAME,False)
-        time.sleep(0.000001)     #allow the uP some time to close SPI engine
-    return id
+    return CMD.getID2(addr)
+
 
 def getHWrev(addr):
     global DIGIbaseADDR
@@ -290,52 +228,7 @@ def VerifyADDR(addr):
 
 def ppCMD(addr,cmd,param1,param2,bytes2return):
     global DIGIbaseADDR
-    global DataGood
-    DataGood=True
-    arg = list(range(4))
-    #resp = []
-    resp = [0]*(bytes2return+1)
-    arg[0]=addr+DIGIbaseADDR;
-    arg[1]=cmd;
-    arg[2]=param1;
-    arg[3]=param2;
-    wait=True
-    t0=time.time()
-    while(wait):    #ensure that ACK is high before asserting FRAME
-        if (GPIO.input(ppACK)!=0):
-            wait=False
-        if ((time.time()-t0)>0.05):   #timeout
-            wait=False
-            DataGood=False     
-    GPIO.output(ppFRAME,True)       #Set FRAME high - tell Pi-Plates to start listening
-    null=spi.xfer(arg,500000,5)     #Send out 4 byte command - ignore what comes back 
-    DataGood=True
-    t0=time.time()
-    wait=True
-    while(wait):
-        if (GPIO.input(ppACK)!=1):  #wait up to 50msec for the addressed plate to ACKnowledge command
-            wait=False
-        if ((time.time()-t0)>0.05): #test for timeout
-            wait=False
-            DataGood=False    
-    if (bytes2return>0) and DataGood:   #If plate is supposed to send data AND no timeout occurred
-        t0=time.time()
-        wait=True
-        while(wait):
-            if (GPIO.input(ppACK)!=1):  #Ensure that ACK is still low before collecting data             
-                wait=False
-            if ((time.time()-t0)>0.08): #timeout
-                wait=False
-                DataGood=False
-        if (DataGood==True):            #if ACK is still low AND there was no timeout then fetch data     
-            resp=spi.xfer([0]*(bytes2return+1),500000,0)    
-            csum=0;                             
-            for i in range(0,bytes2return):     #calculate and verify checksum
-                csum+=resp[i]
-            if ((~resp[bytes2return]& 0xFF) != (csum & 0xFF)):
-                DataGood=False
-    GPIO.output(ppFRAME,False)
-    return resp
+    return CMD.ppCMD2(addr+DIGIbaseADDR,cmd,param1,param2,bytes2return)
 
 def setINT(addr):
     VerifyADDR(addr)
@@ -347,10 +240,13 @@ def clrINT(addr):
     
 def getADDR(addr):
     global DIGIbaseADDR
-    resp = []
+    #resp = []
     resp=ppCMD(addr,0x00,0,0,1)
-    return resp[0]-DIGIbaseADDR
-
+    #print(resp)
+    if (CMD.DataGood):
+        return resp[0]-DIGIbaseADDR
+    else:
+        return 8
     
 def quietPoll():   
     global digisPresent
@@ -361,7 +257,6 @@ def quietPoll():
         if (rtn==i):           
             digisPresent[i]=1
             ppFoundCount += 1
-            #RESET(i)
 
 def RESET(addr):
     VerifyADDR(addr)
