@@ -1,6 +1,5 @@
 import spidev
 import time
-#import string
 import sys
 import os
 import subprocess

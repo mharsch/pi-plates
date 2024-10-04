@@ -2,8 +2,13 @@ import time
 import string
 import site
 import sys
+import os
 from six.moves import input as raw_input
 import subprocess
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():
@@ -206,7 +211,6 @@ def ppCMDr(addr,cmd,param1,param2,bytes2return):
     
 def getADDR(addr):
     global RELAYbaseADDR
-    resp = []
     resp=ppCMDr(addr,0x00,0,0,1)
     return resp[0]-RELAYbaseADDR
 

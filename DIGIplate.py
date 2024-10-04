@@ -2,9 +2,14 @@ import spidev
 import time
 import site
 import sys
+import os
 import threading
 from six.moves import input as raw_input
 import subprocess
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():

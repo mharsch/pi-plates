@@ -8,6 +8,8 @@ import gpiod
 FRAME = 25
 ACK = 23
 SRQ = 22
+
+chip=gpiod.Chip('gpiochip4')
        
 ppFRAME=chip.get_line(FRAME)
 ppSRQ=chip.get_line(SRQ)
@@ -152,7 +154,7 @@ def quietPoll():
     for i in range (0,8):
         platesPresent[i]=0
         rtn = getADDR(i)
-        print(rtn)
+        #print(rtn)
         if (rtn==i):           
             platesPresent[i]=1
             ppFoundCount += 1

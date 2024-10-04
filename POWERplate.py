@@ -3,8 +3,12 @@ import time
 import string
 import site
 import sys
+import os
 import subprocess
 from gpiozero import CPUTemperature
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
 
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
@@ -168,8 +172,19 @@ def setSHUTDOWNdelay(addr,delay):
     assert (delay>=10 and delay<=240),"Invalid delay value. Must be between 10 and 240"
     resp=ppCMD(0,0x55,delay,0,0)
 
-def enablePOWERSW(addr=None):
-    resp=ppCMD(0,0x53,0,0,0)
+def enablePOWERSW(addr, bypass=None):
+    if (getFWrev(addr)>=1.1):
+        if (bypass==None):
+            bypass=True
+        else:
+            assert(bypass==True or bypass==False), 'If used, bypass argument must be "True" or "False".'
+    else:
+        bypass=False
+    if(bypass):
+        bparg=1
+    else:
+        bparg=0   
+    resp=ppCMD(0,0x53,bparg,0,0)
 
 def disablePOWERSW(addr=None):
     resp=ppCMD(0,0x54,0,0,0)    
@@ -197,6 +212,25 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
 def getID(addr):
     addr=0
     return CMD.getID2(addr)
+
+def getFWrev(addr):
+    VerifyADDR(addr)
+    resp=ppCMD(addr,0x03,0,0,1)
+    rev = resp[0]
+    whole=float(rev>>4)
+    point = float(rev&0x0F)
+    return whole+point/10.0
+	
+def getHWrev(addr):
+    VerifyADDR(addr)
+    resp=ppCMD(addr,0x02,0,0,1)
+    rev = resp[0]
+    whole=float(rev>>4)
+    point = float(rev&0x0F)
+    return whole+point/10.0
+
+def getVersion():
+    return POWERversion
     
 def readFLASH(addr,flashadddr):
     global POWERbaseADDR
@@ -210,7 +244,7 @@ def getADDR():
     global POWERbaseADDR
     resp=ppCMD(0,0x00,0,0,1)
     #print resp, DataGood;
-    if (DataGood):
+    if (CMD.DataGood):
         return resp[0]
     else:
         return 8

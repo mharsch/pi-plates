@@ -1,10 +1,15 @@
 import time
 import site
 import sys
+import os
 #import CMD
 #import gpiod
 import subprocess
 import threading
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)

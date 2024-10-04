@@ -3,8 +3,13 @@ import time
 import string
 import site
 import sys
+import os
 from gpiozero import CPUTemperature
 import subprocess
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():
@@ -296,7 +301,7 @@ def getADDR():
     global POWERbaseADDR
     resp=ppCMD(0,0x00,0,0,1)
     #print resp, DataGood;
-    if (DataGood):
+    if (CMD.DataGood):
         return resp[0]        
     else:
         return 8
@@ -306,7 +311,7 @@ def quietPoll():
     rtn = getADDR()
     if (rtn==0):           
         powerPresent=1
-        id=getID()
+        id=getID(0)
         if (id.find('24')>0):
             powerType=24      
         setRTC(0,'l')       

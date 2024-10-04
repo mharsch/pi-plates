@@ -4,8 +4,13 @@ import string
 import site
 import sys
 import math
+import os
 from numbers import Number
 import subprocess
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():

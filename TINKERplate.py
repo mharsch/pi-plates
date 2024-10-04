@@ -54,10 +54,6 @@ pcaMap=[0,1,2,3,4,5,6,6]
 
 #RMAX = 2000
 
-def CLOSE():
-	spi.close()
-	GPIO.cleanup()
-
 def Help():
 	help()
 

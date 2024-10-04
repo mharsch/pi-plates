@@ -3,7 +3,12 @@ import time
 import string
 import site
 import sys
+import os
 import subprocess
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():
@@ -339,32 +344,6 @@ def getADDR(addr):
 def getID(addr):
     global GPIObaseADDR
     return CMD.getID1(addr+GPIObaseADDR)
-    # VerifyADDR(addr)
-    # addr=addr+GPIObaseADDR
-    # id=""
-    # arg = list(range(4))
-    # resp = []
-    # arg[0]=addr;
-    # arg[1]=0x1;
-    # arg[2]=0;
-    # arg[3]=0;
-    # ppFRAME = 25
-    # GPIO.output(ppFRAME,True)
-    # #null = spi.writebytes(arg)
-    # null=spi.xfer(arg,300000,60)
-    # count=0
-# #    time.sleep(.0001)
-    # while (count<20): 
-        # dummy=spi.xfer([00],300000,20)
-# #        time.sleep(.0001)
-        # if (dummy[0] != 0):
-            # num = dummy[0]
-            # id = id + chr(num)
-            # count = count + 1
-        # else:
-            # count=20
-    # GPIO.output(ppFRAME,False)
-    # return id	
 	
 def getPROGdata(addr,paddr):	#read a byte of data from program memory
     VerifyADDR(addr)
@@ -377,7 +356,7 @@ def Poll():
     for i in range (0,8):
         rtn = getADDR(i)
         if ((rtn-8)==i):
-            print ("DAQCplate found at address",rtn-8)
+            #print ("DAQCplate found at address",rtn-8)
             ppFoundCount += 1
     if (ppFoundCount == 0):
         print ("No DAQCplates found")
@@ -400,29 +379,7 @@ def VerifyADDR(addr):
 def ppCMD(addr,cmd,param1,param2,bytes2return):
     global GPIObaseADDR
     return CMD.ppCMD1(addr+GPIObaseADDR,cmd,param1,param2,bytes2return)
-    
-    
-# def ppCMD(addr,cmd,param1,param2,bytes2return):
-    # global GPIObaseADDR
-    # arg = list(range(4))
-    # resp = []
-    # arg[0]=addr+GPIObaseADDR;
-    # arg[1]=cmd;
-    # arg[2]=param1;
-    # arg[3]=param2;
-    # #    time.sleep(.0005)
-    # GPIO.output(ppFRAME,True)
-    # null=spi.xfer(arg,300000,40)
-    # #null = spi.writebytes(arg)   
-    # if bytes2return>0:
-        # time.sleep(.0001)        
-        # for i in range(0,bytes2return):	
-            # dummy=spi.xfer([00],500000,20)
-            # resp.append(dummy[0])        
-    # GPIO.output(ppFRAME,False)
-    # time.sleep(.0003)
-    # return resp	
-	
+    	
 
 def Init():	
     global daqcsPresent

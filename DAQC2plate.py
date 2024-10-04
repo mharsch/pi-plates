@@ -3,6 +3,11 @@ import string
 import site
 import sys
 import subprocess
+import os
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+
 command = ["cat", "/proc/cpuinfo"]
 output = subprocess.check_output(command)
 for line in output.decode().splitlines():
