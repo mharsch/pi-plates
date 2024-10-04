@@ -5,6 +5,8 @@ import site
 import sys
 from numbers import Number
 import RPi.GPIO as GPIO
+from six.moves import input as raw_input
+
 GPIO.setwarnings(False)
 
 #Initialize
@@ -23,8 +25,8 @@ GPIO.setup(ppINT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 spi = spidev.SpiDev()
 spi.open(0,1)	
 localPath=site.getsitepackages()[0]
-#helpPath=localPath+'/piplates/RELAYhelp.txt'
-helpPath='RELAYhelp.txt'       #for development only
+helpPath=localPath+'/piplates/RELAYhelp.txt'
+#helpPath='RELAYhelp.txt'       #for development only
 RPversion=1.1
 # Version 1.0   -   initial release
 # Version 1.1 - adjusted timing on command functions to compensate for RPi SPI changes
@@ -54,7 +56,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=input('press \"Enter\" for more...')                        
+                        Input=raw_input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

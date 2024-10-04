@@ -4,6 +4,7 @@ import string
 import site
 import sys
 import RPi.GPIO as GPIO
+from six.moves import input as raw_input
 GPIO.setwarnings(False)
 
 #Initialize
@@ -52,7 +53,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=input('press \"Enter\" for more...')                        
+                        Input=raw_input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

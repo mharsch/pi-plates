@@ -5,6 +5,7 @@ import site
 import sys
 from numbers import Number
 import RPi.GPIO as GPIO
+from six.moves import input as raw_input
 GPIO.setwarnings(False)
 
 #Initialize
@@ -23,7 +24,8 @@ spi.open(0,1)
 localPath=site.getsitepackages()[0]
 helpPath=localPath+'/piplates/MOTORhelp.txt'
 #helpPath='MOTORhelp.txt'
-MPversion=1.3
+MPversion=1.4
+# Version 1.4 - made help() function compatible with Python 2 and 3. Fixed getID function
 # Version 1.3 - adjusted timing on command functions to compensate for RPi SPI changes
 RMAX = 2000
 MAXADDR=8
@@ -51,7 +53,7 @@ def help():
                     print(s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=input('press \"Enter\" for more...')                        
+                        Input=raw_input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False
@@ -466,7 +468,8 @@ def getID(addr):
     count=0
     time.sleep(.01)
     while (count<20): 
-        dummy=spi.xfer([00],500000,20)
+        dummy=spi.xfer([00],300000,20)
+        dummy=spi.xfer([00],300000,20)
         if (dummy[0] != 0):
             num = dummy[0]
             id = id + chr(num)

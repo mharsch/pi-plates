@@ -6,6 +6,7 @@ import sys
 import math
 from numbers import Number
 import RPi.GPIO as GPIO
+from six.moves import input as raw_input
 GPIO.setwarnings(False)
 
 #Initialize
