@@ -69,7 +69,6 @@ def help():
 def getADC(addr,channel):
     VerifyADDR(addr)
     VerifyAINchannel(channel)
-	
     resp=ppCMD(addr,0x30,channel,0,2)
     value=(256*resp[0]+resp[1])
     value=round(value*4.096/1024,3)
