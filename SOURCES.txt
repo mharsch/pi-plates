@@ -24,8 +24,10 @@ piplates/POWERplate.py
 piplates/PWM.py
 piplates/RANGE.py
 piplates/RELAY.py
+piplates/RELAY2help.txt
 piplates/RELAYhelp.txt
 piplates/RELAYplate.py
+piplates/RELAYplate2.py
 piplates/SERVO.py
 piplates/TEMP.py
 piplates/THERMOhelp.txt

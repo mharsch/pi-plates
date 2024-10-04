@@ -19,7 +19,7 @@ from PWM import *
 from SERVO import *
 from RANGE import *
 from TEMP import *
-from METER import *
+#from METER import *
 from ANFUNC import *
 from BUTTON import *
 

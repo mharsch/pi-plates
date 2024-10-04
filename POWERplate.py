@@ -27,9 +27,9 @@ GPIO.setup(ppSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 spi = spidev.SpiDev()
 spi.open(0,1)	
 localPath=site.getsitepackages()[0]
-#helpPath=localPath+'/piplates/POWERhelp.txt'
-helpPath='POWERhelp.txt'       #for development only
-POWERversion=1.0
+helpPath=localPath+'/piplates/POWERhelp.txt'
+#helpPath='POWERhelp.txt'       #for development only
+POWERversion=1.1
 DataGood=False
 cpu = CPUTemperature()
 
