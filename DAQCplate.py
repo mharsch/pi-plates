@@ -77,7 +77,7 @@ def getADC(addr,channel):
     return value
 
 def getADCall(addr):
-    value=range(8)
+    value=8*[0]
     VerifyADDR(addr)    
     #resp=ppCMD(addr,0x31,0,0,16)
     for i in range (0,8):
