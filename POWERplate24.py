@@ -4,23 +4,13 @@ import string
 import site
 import sys
 import os
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+import CMD
 from gpiozero import CPUTemperature
 import subprocess
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(file_dir)
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -40,9 +30,10 @@ else:
 helpPath=result+'/piplates/POWER24help.txt'
 #helpPath='POWER24help.txt'       #for development only
 
-POWERversion=2.0
+POWERversion=3.0
 # Version 1.0   -   initial release
 # Version 2.0   -   Modified to support RPi5
+# Version 3.0   -   modified GPIO signalling to support GPIOZERO
 
 DataGood=False
 cpu = CPUTemperature()

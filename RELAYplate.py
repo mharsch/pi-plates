@@ -3,29 +3,15 @@ import string
 import site
 import sys
 import os
-from six.moves import input as raw_input
-import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
-
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
+import CMD
+import subprocess
 
 #Initialize
 if (sys.version_info < (3,0,0)):
     sys.stderr.write("This library is only compatible with Python 3")
     exit(1)
-    
 
 RELAYbaseADDR=24
 	
@@ -40,11 +26,12 @@ else:
 helpPath=result+'/piplates/RELAYhelp.txt' 
 #helpPath='RELAYhelp.txt'       #for development only
 
-RPversion=2.0
+RPversion=3.0
 # Version 1.0   -   initial release
 # Version 1.1 - adjusted timing on command functions to compensate for RPi SPI changes
 # Version 1.2 - removed all code associated with interrupts
 # Version 2.0 - Moved I/O operations into separate module for RPi5
+# Version 3.0 -     modified GPIO signalling to support GPIOZERO
 RMAX = 2000
 MAXADDR=8
 relaysPresent = list(range(8))
@@ -70,7 +57,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

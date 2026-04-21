@@ -2,26 +2,13 @@ import time
 import site
 import sys
 import os
-#import CMD
-#import gpiod
+file_dir = os.path.dirname(__file__)
+sys.path.append(file_dir)
+import CMD
 import subprocess
 import threading
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(file_dir)
 
-
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -47,10 +34,10 @@ else:
 helpPath=result+'/piplates/ADChelp.txt'
 #helpPath='ADChelp.txt'       #for development only
 
-ADCversion=2.0
+ADCversion=3.1
 #   Revision 1 - initial release
 #   Revision 2 - updated to support RPi5
-
+#   Revision 3.1 - updated to support GPIOZERO
 
 #DataGood=False
 lock = threading.Lock()
@@ -106,7 +93,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        input('press \"Enter\" for more...')
+                        Input=input('press \"Enter\" for more...')
                 else:
                     Count=100
                     valid=False

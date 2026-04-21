@@ -3,23 +3,19 @@
 #==============================================================================#          
 import time
 import spidev
-import RPi.GPIO as GPIO
+import gpiozero
+from gpiozero import OutputDevice
+from gpiozero import InputDevice
 
-baseADDR=48
 ppNAME='TINKERplate'
 
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BCM)
 baseADDR=48
 MAXADDR=8
-ppFRAME = 25
-ppINT = 22
-ppACK = 23
-GPIO.setup(ppFRAME,GPIO.OUT)
-GPIO.output(ppFRAME,False)  #Initialize FRAME signal
-time.sleep(.001)            #pause to let Pi-Plate reset SPI HW if necessary
-GPIO.setup(ppINT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(ppACK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+FRAME=OutputDevice(25, active_high=True)
+ACK=InputDevice(23, pull_up=True)
+SRQ=InputDevice(22, pull_up=True)
+
+FRAME.off()
 try:
     spi = spidev.SpiDev()
     spi.open(0,1)
@@ -52,20 +48,19 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
     t0=time.time()
     wait=True    
     while(wait):
-        if (GPIO.input(ppACK)==1):              
+        if (ACK.value==0):              
             wait=False
         if ((time.time()-t0)>0.05):   #timeout
             wait=False
             DataGood=False
-    if (DataGood==True):
-        ppFRAME = 25    
-        GPIO.output(ppFRAME,True)
+    if (DataGood==True):  
+        FRAME.on()
         null=spi.xfer(arg,500000,5)
         #DataGood=True
         t0=time.time()
         wait=True
         while(wait):
-            if (GPIO.input(ppACK)!=1):
+            if (ACK.value==1):
                 wait=False
             if ((time.time()-t0)>0.05):   #timeout
                 wait=False
@@ -74,7 +69,7 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
             t0=time.time()
             wait=True
             while(wait):
-                if (GPIO.input(ppACK)!=1):              
+                if (ACK.value==1):              
                     wait=False
                 if ((time.time()-t0)>0.08):   #timeout
                     wait=False
@@ -88,7 +83,7 @@ def ppCMD(addr,cmd,param1,param2,bytes2return):
                     csum+=resp[i]
                 if ((~resp[bytes2return]& 0xFF) != (csum & 0xFF)):
                     DataGood=False
-        GPIO.output(ppFRAME,False)
+        FRAME.off()
     return resp
 
 def getID(addr):
@@ -106,20 +101,19 @@ def getID(addr):
     t0=time.time()
     wait=True
     while(wait):
-        if (GPIO.input(ppACK)==1):              
+        if (ACK.value==0):              
             wait=False
         if ((time.time()-t0)>0.05):   #timeout
             wait=False
             DataGood=False
     if (DataGood==True): 
-        ppFRAME = 25
-        GPIO.output(ppFRAME,True)
+        FRAME.on()
         null=spi.xfer(arg,500000,50)
         #DataGood=True
         t0=time.time()
         wait=True
         while(wait):
-            if (GPIO.input(ppACK)!=1):              
+            if (ACK.value==1):              
                 wait=False
             if ((time.time()-t0)>0.05):   #timeout
                 wait=False
@@ -145,7 +139,7 @@ def getID(addr):
             #print checkSum, ~checkSum & 0xFF, csum & 0xFF
             if ((~checkSum & 0xFF) != (csum & 0xFF)):
                 DataGood=False
-        GPIO.output(ppFRAME,False)
+        FRAME.off()
     return id   
     
 def getADDR(addr):

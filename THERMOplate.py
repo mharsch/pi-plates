@@ -5,24 +5,13 @@ import site
 import sys
 import math
 import os
-from numbers import Number
+#from numbers import Number
 import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+import CMD
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
-from six.moves import input as raw_input
+
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -42,7 +31,7 @@ else:
 helpPath=result+'/piplates/THERMOhelp.txt'
 #helpPath='THERMOhelp.txt'       #for development only
 
-THERMOversion=2.1
+THERMOversion=3.0
 #1.0 - initial release
 #1.1 - added line frequency options
 #1.2 - added data smoothing options
@@ -50,6 +39,7 @@ THERMOversion=2.1
 #2.0 - Modified to support RPi5
 #2.1 - Fixed bug where path to help files was broken when modules were
 #      installed using "pip install --break-package-system"
+# Version 3.0 -     modified GPIO signalling to support GPIOZERO
 
 DataGood=False
 #tType='k'   #Default thermocouple is type K
@@ -113,7 +103,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

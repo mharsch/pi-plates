@@ -4,25 +4,16 @@ import string
 import site
 import sys
 import math
-from numbers import Number
+#from numbers import Number
 import os
 import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+from BASE import *
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    from BASE5 import * 
-else:
-    from BASE0 import *
-    
+
+
+   
 from A2D import *
 from LED import *
 from RELAY import *
@@ -51,9 +42,10 @@ else:
 helpPath=result+'/piplates/TINKERhelp.txt' 
 #helpPath='TINKERhelp.txt'       #for development only
 
-TINKERversion=2.0
+TINKERversion=3.0
 # Version 1.0   -   initial release
 # Version 2.0   -   Modified to support RPi5
+# Version 3.0   -   Modified to use GPIOZERO
 
 dModes=['din','dout','button','pwm','range','temp','servo','rgbled','motion']
 pcaRequired=[0,0,0,1,0,0,0,0,0]

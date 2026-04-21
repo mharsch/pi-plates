@@ -4,23 +4,12 @@ import site
 import sys
 import os
 import threading
-from six.moves import input as raw_input
-import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+import CMD
+import subprocess
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
+
 
 
 #Initialize
@@ -41,10 +30,11 @@ else:
 helpPath=result+'/piplates/DIGIhelp.txt' 
 #helpPath='DIGIhelp.txt'       #for development only
 
-DIGIversion=2.1
+DIGIversion=3.0
 # Version 1.0   -   initial release
 # Version 2.0   -   Modified to support RPi5
 # Version 2.1   -   Fixed bug in getFREQ
+# Version 3.0 -     modified GPIO signalling to support GPIOZERO
 
 RMAX = 2000
 MAXADDR=8
@@ -74,7 +64,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

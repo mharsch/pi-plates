@@ -4,26 +4,13 @@ import site
 import sys
 import os
 import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+import CMD
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
-from numbers import Number
-from six.moves import input as raw_input
-from numbers import Number
-from six.moves import input as raw_input
 
+
+from numbers import Number
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -44,10 +31,11 @@ else:
 helpPath=result+'/piplates/MOTORhelp.txt'
 #helpPath='MOTORhelp.txt'
 
-MPversion=2.0
+MPversion=3.0
 # Version 1.4 - made help() function compatible with Python 2 and 3. Fixed getID function
 # Version 1.3 - adjusted timing on command functions to compensate for RPi SPI changes
 # Version 2.0 - Moved I/O operations into separate module for RPi5
+# Version 3.0 -     modified GPIO signalling to support GPIOZERO
 RMAX = 2000
 MAXADDR=8
 motorsPresent = list(range(8))
@@ -74,7 +62,7 @@ def help():
                     print(s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

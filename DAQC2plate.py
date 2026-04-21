@@ -4,23 +4,12 @@ import site
 import sys
 import subprocess
 import os
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+import CMD
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
-from numbers import Number
-from six.moves import input as raw_input
+#from numbers import Number
+
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -46,8 +35,9 @@ helpPath=result+'/piplates/DAQC2help.txt'
 #  1.1      Improved download of oscilloscope data to address issues with latest OS
 #  2.0 - Moved I/O operations into separate module for RPi5
 #  2.1 - Fixed bug in getFREQ
+#  3.0 - moved IO functions to gpiozero
 ####################################################################################
-DAQC2version=2.1
+DAQC2version=3.0
 
 DataGood=False
 
@@ -79,7 +69,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False

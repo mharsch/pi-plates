@@ -5,22 +5,12 @@ import site
 import sys
 import os
 import subprocess
-
 file_dir = os.path.dirname(__file__)
 sys.path.append(file_dir)
+import CMD
 
-command = ["cat", "/proc/cpuinfo"]
-output = subprocess.check_output(command)
-for line in output.decode().splitlines():
-    if "Model" in line:
-        model = line.split(":")[1].strip()
-        break    
-#print(model)
-if model.find("Raspberry Pi 5") != -1:
-    import CMD5 as CMD 
-else:
-    import CMD0 as CMD
-from six.moves import input as raw_input
+
+
 
 #Initialize
 if (sys.version_info < (3,0,0)):
@@ -40,18 +30,17 @@ else:
 helpPath=result+'/piplates/DAQChelp.txt'
 #helpPath='DAQChelp.txt'
 
-DAQCversion=2.0
+DAQCversion=3.0
 #Version 1.5 - fixed read issues with getaADCall and getID
 #Version 1.4 - added Python 3 compatibility
 #Version 2.0 - modified GPIO signalling to accomodate the RPi 5
+#Version 3.0 - modified GPIO signalling to support GPIOZERO
 daqcsPresent = list(range(8))
 Vcc=list(range(8))
 MAXADDR=8
 	
 def CLOSE():
     spi.close()
-#    ppFRAME.release()
-#    ppSRQ.release()
 
 def Help():
 	help()
@@ -71,7 +60,7 @@ def help():
                     print (s[:len(s)-1])
                     Count = Count + 1
                     if (Count==20):
-                        Input=raw_input('press \"Enter\" for more...')                        
+                        Input=input('press \"Enter\" for more...')                        
                 else:
                     Count=100
                     valid=False
