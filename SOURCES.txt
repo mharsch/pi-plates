@@ -4,13 +4,13 @@ setup.py
 pi_plates.egg-info/PKG-INFO
 pi_plates.egg-info/SOURCES.txt
 pi_plates.egg-info/dependency_links.txt
-pi_plates.egg-info/desktop.ini
 pi_plates.egg-info/top_level.txt
 piplates/A2D.py
 piplates/ADChelp.txt
 piplates/ADCplate.py
 piplates/ANFUNC.py
 piplates/BASE.py
+piplates/BRIDGEplate.py
 piplates/BUTTON.py
 piplates/CMD.py
 piplates/CURRENThelp.txt
